@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import type { MemberSession } from "@/lib/auth";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
@@ -24,12 +25,14 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
   async function logout() {
     if (isAdmin) {
       await fetch("/api/auth/logout", { method: "POST" });
+      setOpen(false);
+      router.push("/");
+      router.refresh();
     } else {
+      // Hapus cookie session (email/password) dan NextAuth session (Google)
       await fetch("/api/member/logout", { method: "POST" });
+      await signOut({ callbackUrl: "/" });
     }
-    setOpen(false);
-    router.push("/");
-    router.refresh();
   }
 
   if (!member) {

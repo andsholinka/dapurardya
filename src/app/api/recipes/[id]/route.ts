@@ -47,7 +47,7 @@ export async function PUT(
     }
     const { id } = await params;
     const body = (await request.json()) as RecipeInput;
-    const { title, description, ingredients, steps, category, image, prepTimeMinutes, cookTimeMinutes, servings, published } = body;
+    const { title, description, ingredients, steps, category, image, prepTimeMinutes, cookTimeMinutes, servings, published, memberOnly } = body;
     if (!title?.trim() || !description?.trim() || !Array.isArray(ingredients) || !Array.isArray(steps) || !category?.trim()) {
       return NextResponse.json(
         { error: "Judul, deskripsi, bahan, langkah, dan kategori wajib diisi" },
@@ -78,6 +78,7 @@ export async function PUT(
       cookTimeMinutes,
       servings,
       published: published ?? true,
+      memberOnly: memberOnly ?? false,
       updatedAt: now,
     };
     const result = await col.findOneAndUpdate(

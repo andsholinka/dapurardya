@@ -1,9 +1,10 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { getDb } from "@/lib/mongodb";
+import { auth } from "@/lib/next-auth";
 
 const ADMIN_COOKIE = "admin_session";
-const MEMBER_COOKIE = "member_session"; // format: memberId|name|email
+const MEMBER_COOKIE = "member_session";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
 // ─── Admin ────────────────────────────────────────────────────────────────────
@@ -53,6 +54,16 @@ export interface MemberSession {
 }
 
 export async function getMemberSession(): Promise<MemberSession | null> {
+  // Cek NextAuth session (Google login) dulu
+  const nextAuthSession = await auth();
+  if (nextAuthSession?.user?.email) {
+    return {
+      id: nextAuthSession.user.email,
+      name: nextAuthSession.user.name || nextAuthSession.user.email,
+      email: nextAuthSession.user.email,
+    };
+  }
+  // Fallback ke cookie session (email/password login)
   const cookieStore = await cookies();
   const val = cookieStore.get(MEMBER_COOKIE)?.value;
   if (!val) return null;

@@ -3,6 +3,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { RecipeCard } from "@/components/RecipeCard";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { getDb } from "@/lib/mongodb";
+import { getMemberSession, getAdminSession } from "@/lib/auth";
 
 const COLLECTION = "recipes";
 
@@ -40,7 +41,8 @@ function SearchBarFallback() {
 
 export default async function ResepPage({ searchParams }: PageProps) {
   const params = await searchParams;
-  const recipes = await getRecipes(params);
+  const [recipes, member, isAdmin] = await Promise.all([getRecipes(params), getMemberSession(), getAdminSession()]);
+  const isMember = !!member || isAdmin;
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-12">
@@ -55,7 +57,7 @@ export default async function ResepPage({ searchParams }: PageProps) {
       )}
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
         {recipes.map((recipe) => (
-          <RecipeCard key={recipe._id || recipe.slug} recipe={recipe} />
+          <RecipeCard key={recipe._id || recipe.slug} recipe={recipe} isMember={isMember} />
         ))}
       </div>
       {recipes.length === 0 && (

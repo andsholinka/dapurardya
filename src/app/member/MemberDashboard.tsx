@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
 import type { MemberSession } from "@/lib/auth";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
@@ -11,8 +12,7 @@ export default function MemberDashboard({ session, requests }: { session: Member
 
   async function logout() {
     await fetch("/api/member/logout", { method: "POST" });
-    router.push("/");
-    router.refresh();
+    await signOut({ callbackUrl: "/" });
   }
 
   return (

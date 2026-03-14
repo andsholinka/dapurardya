@@ -26,6 +26,7 @@ async function getFeaturedRecipes(): Promise<(Recipe & { _id?: string })[]> {
 
 export default async function HomePage() {
   const [recipes, member] = await Promise.all([getFeaturedRecipes(), getMemberSession()]);
+  const isMember = !!member;
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-12">
@@ -61,7 +62,7 @@ export default async function HomePage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {recipes.map((recipe) => (
-              <RecipeCard key={recipe._id || recipe.slug} recipe={recipe} />
+              <RecipeCard key={recipe._id || recipe.slug} recipe={recipe} isMember={isMember} />
             ))}
           </div>
         )}

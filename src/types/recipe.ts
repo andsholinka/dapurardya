@@ -15,6 +15,7 @@ export interface Recipe {
   createdAt: Date;
   updatedAt: Date;
   published?: boolean;
+  memberOnly?: boolean;
 }
 
 /** MongoDB document type (collection uses ObjectId for _id) */
@@ -31,4 +32,5 @@ export interface RecipeInput {
   cookTimeMinutes?: number;
   servings?: number;
   published?: boolean;
+  memberOnly?: boolean;
 }

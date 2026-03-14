@@ -1,7 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { getDb } from "@/lib/mongodb";
+import { getMemberSession, getAdminSession } from "@/lib/auth";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { buttonVariants } from "@/lib/button-variants";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -29,6 +30,14 @@ export default async function RecipeDetailPage({ params }: PageProps) {
     recipe = null;
   }
   if (!recipe) notFound();
+
+  // Cek akses member only
+  if (recipe.memberOnly) {
+    const [member, isAdmin] = await Promise.all([getMemberSession(), getAdminSession()]);
+    if (!member && !isAdmin) {
+      redirect(`/member/auth?tab=register`);
+    }
+  }
 
   const imgSrc = recipe.image || placeholderImage;
   const isDataUrl = imgSrc.startsWith("data:");

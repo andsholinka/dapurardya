@@ -22,11 +22,12 @@ const defaultRecipe: RecipeInput = {
   image: "",
   ingredients: [""],
   steps: [""],
-  category: "Utama",
+  category: "Makanan",
   prepTimeMinutes: undefined,
   cookTimeMinutes: undefined,
   servings: undefined,
   published: true,
+  memberOnly: false,
 };
 
 export function RecipeForm({ initial, mode }: RecipeFormProps) {
@@ -159,13 +160,16 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
           </div>
           <div>
             <Label htmlFor="category">Kategori</Label>
-            <Input
+            <select
               id="category"
               value={form.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              className="mt-1 rounded-xl border-2"
-              placeholder="Contoh: Utama, Dessert, Camilan"
-            />
+              className="mt-1 w-full rounded-xl border-2 border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="Makanan">Makanan</option>
+              <option value="Minuman">Minuman</option>
+              <option value="Cemilan">Cemilan</option>
+            </select>
           </div>
           <div>
             <Label>Gambar (opsional)</Label>
@@ -242,6 +246,16 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
               className="rounded border-input"
             />
             <Label htmlFor="published">Publikasikan (tampil di website)</Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="memberOnly"
+              checked={form.memberOnly ?? false}
+              onChange={(e) => setForm((f) => ({ ...f, memberOnly: e.target.checked }))}
+              className="rounded border-input"
+            />
+            <Label htmlFor="memberOnly">Khusus Member (detail hanya untuk member terdaftar)</Label>
           </div>
         </CardContent>
       </Card>

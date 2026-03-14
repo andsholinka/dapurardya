@@ -35,7 +35,7 @@ export default async function HomePage() {
           Dapur Ardya
         </h1>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          Kumpulan resep masakan yang mudah diikuti dan enak. Gratis untuk semua.
+          Kumpulan resep masakan yang mudah diikuti dan enak.<br className="hidden sm:block" /> Gratis untuk semua.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-3">
           <Link href="/resep" className={cn(buttonVariants({ size: "lg" }), "rounded-xl")}>

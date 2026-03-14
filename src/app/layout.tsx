@@ -13,13 +13,26 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: "Dapur Ardya – Resep Masakan",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app"),
+  title: {
+    default: "Dapur Ardya – Resep Masakan",
+    template: "%s – Dapur Ardya",
+  },
   description: "Kumpulan resep masakan yang mudah dan enak. Gratis untuk semua.",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, title: "Dapur Ardya" },
   icons: {
     icon: "/icon-192.png",
     apple: "/icon-192.png",
+  },
+  openGraph: {
+    siteName: "Dapur Ardya",
+    type: "website",
+    locale: "id_ID",
+    images: [{ url: "/icon-512.png", width: 512, height: 512, alt: "Dapur Ardya" }],
+  },
+  twitter: {
+    card: "summary_large_image",
   },
 };
 

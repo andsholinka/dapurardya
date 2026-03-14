@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' fill='%23fce7f3'%3E%3Crect width='400' height='300' fill='%23fce7f3'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23be185d' font-size='24' font-family='sans-serif'%3E🍳%3C/text%3E%3C/svg%3E";
+const blurDataURL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect width='40' height='30' fill='%23fce7f3'/%3E%3C/svg%3E";
 
 interface RecipeCardProps {
   recipe: Recipe & { _id?: string };
@@ -28,7 +29,7 @@ export function RecipeCard({ recipe, className, isMember = false }: RecipeCardPr
         {isDataUrl ? (
           <img src={imgSrc} alt={recipe.title} className={cn("object-cover w-full h-full", locked && "blur-[2px]")} />
         ) : (
-          <Image src={imgSrc} alt={recipe.title} fill className={cn("object-cover", locked && "blur-[2px]")} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" />
+          <Image src={imgSrc} alt={recipe.title} fill className={cn("object-cover", locked && "blur-[2px]")} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" placeholder="blur" blurDataURL={blurDataURL} />
         )}
         <span className="absolute top-2 left-2 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-0.5">
           {recipe.category}

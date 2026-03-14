@@ -2,7 +2,8 @@ import type { ObjectId } from "mongodb";
 
 export interface RecipeRequest {
   _id?: string;
-  memberId?: string;  // opsional, kalau request dari member
+  memberId?: string;
+  memberEmail?: string; // untuk kirim notifikasi saat selesai
   name: string;
   recipeName: string;
   message?: string;

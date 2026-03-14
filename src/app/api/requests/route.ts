@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, getMemberSession } from "@/lib/auth";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
+import { sendRequestNotification } from "@/lib/email";
 
 const COLLECTION = "recipe_requests";
 
@@ -15,10 +16,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Nama dan nama resep wajib diisi" }, { status: 400 });
     }
 
+    // Ambil email member dari session jika login
+    const memberSession = await getMemberSession();
+    const memberEmail = memberSession?.email || undefined;
+
     const db = await getDb();
     const col = db.collection<RecipeRequestDoc>(COLLECTION);
     const doc: Omit<RecipeRequestDoc, "_id"> = {
       ...(memberId ? { memberId } : {}),
+      ...(memberEmail ? { memberEmail } : {}),
       name: name.trim(),
       recipeName: recipeName.trim(),
       message: message?.trim() || undefined,
@@ -27,6 +33,12 @@ export async function POST(request: NextRequest) {
     };
 
     const result = await col.insertOne(doc as RecipeRequestDoc);
+
+    // Kirim notifikasi email ke admin (non-blocking)
+    sendRequestNotification({ name: doc.name, recipeName: doc.recipeName, message: doc.message, memberId }).catch((err) =>
+      console.error("[EMAIL] Gagal kirim notifikasi:", err)
+    );
+
     return NextResponse.json({ _id: result.insertedId.toString(), ...doc }, { status: 201 });
   } catch (e) {
     console.error("[REQUEST] Error:", e);

@@ -3,6 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import { ObjectId } from "mongodb";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
+import { sendRequestDoneNotification } from "@/lib/email";
 
 const COLLECTION = "recipe_requests";
 
@@ -15,7 +16,22 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   try {
     const db = await getDb();
     const col = db.collection<RecipeRequestDoc>(COLLECTION);
+
+    // Ambil data request sebelum diupdate untuk keperluan email
+    const existing = await col.findOne({ _id: new ObjectId(id) });
+
     await col.updateOne({ _id: new ObjectId(id) }, { $set: { status: "done" } });
+
+    // Kirim email ke member jika ada email tersimpan (non-blocking)
+    if (existing?.memberEmail) {
+      sendRequestDoneNotification({
+        memberEmail: existing.memberEmail,
+        memberName: existing.name,
+        recipeName: existing.recipeName,
+        message: existing.message,
+      }).catch((err) => console.error("[EMAIL] Gagal kirim notifikasi done:", err));
+    }
+
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[REQUEST PATCH] Error:", e);

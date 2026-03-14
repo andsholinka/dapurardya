@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ShareButton } from "@/components/ShareButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { RecipeCard } from "@/components/RecipeCard";
+import { RatingStars } from "@/components/RatingStars";
 
 const COLLECTION = "recipes";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
@@ -162,6 +163,10 @@ export default async function RecipeDetailPage({ params }: PageProps) {
             ))}
           </div>
         )}
+
+        <div className="mb-6">
+          <RatingStars recipeId={recipe._id!} isMember={isMember} />
+        </div>
 
         <Card className="rounded-2xl border-2 mb-6">
           <CardHeader>

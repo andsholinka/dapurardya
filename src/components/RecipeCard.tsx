@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Recipe } from "@/types/recipe";
 import { cn } from "@/lib/utils";
 import { Lock } from "lucide-react";
+import { RatingStars } from "@/components/RatingStars";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' fill='%23fce7f3'%3E%3Crect width='400' height='300' fill='%23fce7f3'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23be185d' font-size='24' font-family='sans-serif'%3E🍳%3C/text%3E%3C/svg%3E";
 const blurDataURL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'%3E%3Crect width='40' height='30' fill='%23fce7f3'/%3E%3C/svg%3E";
@@ -52,11 +53,22 @@ export function RecipeCard({ recipe, className, isMember = false }: RecipeCardPr
         <p className="text-sm text-muted-foreground line-clamp-2">
           {recipe.description}
         </p>
-        {(recipe.prepTimeMinutes != null || recipe.cookTimeMinutes != null) && (
-          <p className="text-xs text-muted-foreground mt-2">
-            ⏱ {(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0)} menit
-          </p>
-        )}
+        <div className="flex items-center justify-between mt-2 flex-wrap gap-1">
+          {(recipe.prepTimeMinutes != null || recipe.cookTimeMinutes != null) && (
+            <p className="text-xs text-muted-foreground">
+              ⏱ {(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0)} menit
+            </p>
+          )}
+          {(recipe.ratingCount ?? 0) > 0 && (
+            <RatingStars
+              recipeId={recipe._id ?? ""}
+              isMember={false}
+              compact
+              initialAvg={recipe.avgRating ?? 0}
+              initialCount={recipe.ratingCount ?? 0}
+            />
+          )}
+        </div>
       </CardContent>
     </Card>
   );

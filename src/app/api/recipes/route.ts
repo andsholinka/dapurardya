@@ -31,11 +31,25 @@ export async function GET(request: NextRequest) {
       .sort({ updatedAt: -1 })
       .toArray();
 
+    // Join rating dari koleksi recipe_ratings
+    const ids = recipes.map((r) => r._id!.toString());
+    const ratings = await db.collection("recipe_ratings").aggregate([
+      { $match: { recipeId: { $in: ids } } },
+      { $group: { _id: "$recipeId", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]).toArray();
+    const ratingMap = new Map(ratings.map((r) => [r._id, { avg: Math.round(r.avg * 10) / 10, count: r.count }]));
+
     return NextResponse.json(
-      recipes.map((r) => ({
-        ...r,
-        _id: r._id?.toString(),
-      }))
+      recipes.map((r) => {
+        const rid = r._id?.toString();
+        const rdata = rid ? ratingMap.get(rid) : undefined;
+        return {
+          ...r,
+          _id: rid,
+          avgRating: rdata?.avg ?? 0,
+          ratingCount: rdata?.count ?? 0,
+        };
+      })
     );
   } catch (e) {
     console.error(e);

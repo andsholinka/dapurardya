@@ -17,6 +17,9 @@ export interface Recipe {
   updatedAt: Date;
   published?: boolean;
   memberOnly?: boolean;
+  // Computed — di-join saat fetch list
+  avgRating?: number;
+  ratingCount?: number;
 }
 
 /** MongoDB document type (collection uses ObjectId for _id) */

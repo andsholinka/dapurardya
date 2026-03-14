@@ -13,13 +13,35 @@ async function getFeaturedRecipes(): Promise<(Recipe & { _id?: string })[]> {
   try {
     const db = await getDb();
     const col = db.collection<RecipeDoc>(COLLECTION);
-    const list = await col
+    const recipes = await col
       .find({ published: true })
       .sort({ updatedAt: -1 })
       .limit(6)
       .toArray();
-    return list.map((r) => ({ ...r, _id: r._id?.toString() }));
-  } catch {
+
+    if (recipes.length === 0) return [];
+
+    // Join rating dari koleksi recipe_ratings
+    const ids = recipes.map((r) => r._id!.toString());
+    const ratings = await db.collection("recipe_ratings").aggregate([
+      { $match: { recipeId: { $in: ids } } },
+      { $group: { _id: "$recipeId", avg: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]).toArray();
+
+    const ratingMap = new Map(ratings.map((r) => [r._id, { avg: Math.round(r.avg * 10) / 10, count: r.count }]));
+
+    return recipes.map((r) => {
+      const rid = r._id?.toString();
+      const rdata = rid ? ratingMap.get(rid) : undefined;
+      return {
+        ...r,
+        _id: rid,
+        avgRating: rdata?.avg ?? 0,
+        ratingCount: rdata?.count ?? 0,
+      };
+    });
+  } catch (e) {
+    console.error("[GET_FEATURE_RECIPES]", e);
     return [];
   }
 }

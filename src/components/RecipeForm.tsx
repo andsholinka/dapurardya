@@ -23,6 +23,7 @@ const defaultRecipe: RecipeInput = {
   ingredients: [""],
   steps: [""],
   category: "Makanan",
+  tags: [],
   prepTimeMinutes: undefined,
   cookTimeMinutes: undefined,
   servings: undefined,
@@ -40,7 +41,9 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
     ...initial,
     ingredients: initial?.ingredients?.length ? initial.ingredients : [""],
     steps: initial?.steps?.length ? initial.steps : [""],
+    tags: initial?.tags ?? [],
   }));
+  const [tagInput, setTagInput] = useState("");
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -93,6 +96,21 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
       next[i] = v;
       return { ...f, steps: next };
     });
+  }
+
+  function addTag(tag: string) {
+    const t = tag.trim().toLowerCase();
+    if (!t) return;
+    setForm((f) => {
+      const current = f.tags ?? [];
+      if (current.includes(t)) return f;
+      return { ...f, tags: [...current, t] };
+    });
+    setTagInput("");
+  }
+
+  function removeTag(tag: string) {
+    setForm((f) => ({ ...f, tags: (f.tags ?? []).filter((t) => t !== tag) }));
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -170,6 +188,37 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
               <option value="Minuman">Minuman</option>
               <option value="Cemilan">Cemilan</option>
             </select>
+          </div>
+          <div>
+            <Label>Tags (opsional)</Label>
+            <div className="mt-1 flex flex-wrap gap-1.5 mb-2">
+              {(form.tags ?? []).map((tag) => (
+                <span key={tag} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  #{tag}
+                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive">
+                    <X className="size-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === ",") {
+                    e.preventDefault();
+                    addTag(tagInput);
+                  }
+                }}
+                placeholder="Ketik tag lalu Enter (misal: pedas, vegetarian)"
+                className="rounded-xl border-2 text-sm"
+              />
+              <Button type="button" variant="outline" size="sm" onClick={() => addTag(tagInput)} className="rounded-xl shrink-0">
+                Tambah
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Pisahkan dengan Enter atau koma</p>
           </div>
           <div>
             <Label>Gambar (opsional)</Label>

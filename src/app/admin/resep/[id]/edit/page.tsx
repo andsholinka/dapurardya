@@ -52,6 +52,7 @@ export default async function EditRecipePage({ params }: PageProps) {
           servings: recipe.servings,
           published: recipe.published,
           memberOnly: recipe.memberOnly,
+          tags: recipe.tags,
         }}
       />
     </>

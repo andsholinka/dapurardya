@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ShareButton } from "@/components/ShareButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
+import { RecipeCard } from "@/components/RecipeCard";
 
 const COLLECTION = "recipes";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
@@ -85,6 +86,24 @@ export default async function RecipeDetailPage({ params }: PageProps) {
   const isAdmin = await getAdminSession();
   const isMember = !!(member || isAdmin);
 
+  // Ambil related recipes — sama kategori atau punya tag yang sama, exclude resep ini
+  let relatedRecipes: (Recipe & { _id: string })[] = [];
+  try {
+    const db = await getDb();
+    const col = db.collection<RecipeDoc>(COLLECTION);
+    const tagFilter = recipe.tags?.length ? { tags: { $in: recipe.tags } } : {};
+    const related = await col
+      .find({
+        published: true,
+        slug: { $ne: slug },
+        $or: [{ category: recipe.category }, tagFilter],
+      })
+      .sort({ updatedAt: -1 })
+      .limit(3)
+      .toArray();
+    relatedRecipes = related.map((r) => ({ ...r, _id: r._id!.toString() })) as (Recipe & { _id: string })[];
+  } catch { /* silent */ }
+
   const imgSrc = recipe.image || placeholderImage;
   const isDataUrl = imgSrc.startsWith("data:");
 
@@ -132,7 +151,17 @@ export default async function RecipeDetailPage({ params }: PageProps) {
           <ShareButton title={recipe.title} />
           <BookmarkButton recipeId={recipe._id!} isMember={isMember} />
         </div>
-        <p className="text-foreground mb-6">{recipe.description}</p>
+        <p className="text-foreground mb-4">{recipe.description}</p>
+
+        {recipe.tags && recipe.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mb-6">
+            {recipe.tags.map((tag) => (
+              <span key={tag} className="text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         <Card className="rounded-2xl border-2 mb-6">
           <CardHeader>
@@ -159,6 +188,18 @@ export default async function RecipeDetailPage({ params }: PageProps) {
             </ol>
           </CardContent>
         </Card>
+
+        {relatedRecipes.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-lg font-semibold mb-1">Resep Serupa</h2>
+            <p className="text-sm text-muted-foreground mb-4">Resep lain yang mungkin kamu suka</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {relatedRecipes.map((r) => (
+                <RecipeCard key={r._id} recipe={r} isMember={isMember} />
+              ))}
+            </div>
+          </div>
+        )}
       </article>
     </div>
   );

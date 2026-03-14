@@ -9,6 +9,7 @@ export interface Recipe {
   ingredients: string[];
   steps: string[];
   category: string;
+  tags?: string[];
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
   servings?: number;
@@ -28,6 +29,7 @@ export interface RecipeInput {
   ingredients: string[];
   steps: string[];
   category: string;
+  tags?: string[];
   prepTimeMinutes?: number;
   cookTimeMinutes?: number;
   servings?: number;

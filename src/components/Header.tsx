@@ -13,15 +13,12 @@ export async function Header() {
       <div className="container flex h-14 max-w-4xl mx-auto items-center justify-between px-4">
         <Link
           href="/"
-          className="flex items-center gap-2 font-semibold text-lg text-foreground hover:text-primary transition-colors"
+          className="flex items-center gap-1.5 sm:gap-2 font-bold text-base sm:text-lg text-foreground hover:text-primary transition-colors shrink-0 whitespace-nowrap"
         >
-          <Image src="/icon-192.png" alt="Dapur Ardya" width={32} height={32} className="rounded-md" quality={100} />
+          <Image src="/icon-192.png" alt="Dapur Ardya" width={28} height={28} className="rounded-lg sm:w-[32px] sm:h-[32px]" quality={100} />
           Dapur Ardya
         </Link>
         <nav className="flex items-center gap-2">
-          <Link href="/resep" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-            Semua Resep
-          </Link>
           {isAdmin ? (
             <HeaderMenu member={{ id: "admin", name: "Admin", email: "" }} isAdmin />
           ) : (

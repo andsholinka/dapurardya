@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,9 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 interface RequestModalProps {
   memberId?: string;
   memberName?: string;
+  size?: "default" | "sm" | "lg" | "icon" | "xs";
+  className?: string;
 }
 
-export function RequestModal({ memberId, memberName }: RequestModalProps) {
+export function RequestModal({ memberId, memberName, size, className }: RequestModalProps) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: memberName || "", recipeName: "", message: "" });
   const [loading, setLoading] = useState(false);
@@ -44,13 +47,18 @@ export function RequestModal({ memberId, memberName }: RequestModalProps) {
 
   return (
     <>
-      <Button variant="outline" size="sm" onClick={openModal} className="rounded-xl">
+      <Button 
+        variant="outline" 
+        size={size || "sm"} 
+        onClick={openModal} 
+        className={cn("rounded-xl", size === "lg" && "px-4 sm:px-8", className)}
+      >
         Request Resep
       </Button>
 
       {open && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="bg-background rounded-2xl w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-background rounded-2xl w-full max-w-md shadow-xl text-left" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b">
               <div>
                 <p className="font-semibold text-lg">Request Resep</p>

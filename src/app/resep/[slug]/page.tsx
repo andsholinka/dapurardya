@@ -144,10 +144,9 @@ export default async function RecipeDetailPage({ params }: PageProps) {
           {recipe.title}
         </h1>
         <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
-          {(recipe.prepTimeMinutes != null || recipe.cookTimeMinutes != null || recipe.servings != null) && (
-            <p className="text-muted-foreground text-sm">
-              ⏱ Persiapan: {recipe.prepTimeMinutes ?? 0} menit · Masak: {recipe.cookTimeMinutes ?? 0} menit
-              {recipe.servings != null && ` · Porsi: ${recipe.servings}`}
+          {recipe.servings != null && (
+            <p className="text-muted-foreground text-sm font-medium flex items-center gap-1.5">
+              <span>🍽</span> {recipe.servings} Porsi
             </p>
           )}
           <ShareButton title={recipe.title} />

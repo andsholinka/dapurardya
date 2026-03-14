@@ -59,14 +59,20 @@ export default async function HomePage() {
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
           Kumpulan resep masakan yang mudah diikuti dan enak.<br className="hidden sm:block" /> Gratis untuk semua.
         </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <Link href="/resep" className={cn(buttonVariants({ size: "lg" }), "rounded-xl")}>
+        <div className="mt-8 grid grid-cols-2 gap-2 sm:gap-3 w-full max-w-md mx-auto">
+          <Link 
+            href="/resep" 
+            className={cn(buttonVariants({ variant: "default", size: "lg" }), "rounded-xl px-2 sm:px-8 text-[11px] sm:text-sm whitespace-nowrap shadow-md")}
+          >
             Lihat Semua Resep
           </Link>
           {member ? (
-            <RequestModal memberId={member.id} memberName={member.name} />
+            <RequestModal memberId={member.id} memberName={member.name} size="lg" className="w-full text-[11px] sm:text-sm shadow-sm" />
           ) : (
-            <Link href="/member/auth?tab=register" className={cn(buttonVariants({ variant: "outline" }), "rounded-xl")}>
+            <Link 
+              href="/member/auth?tab=register" 
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "rounded-xl px-2 sm:px-8 text-[11px] sm:text-sm whitespace-nowrap shadow-sm")}
+            >
               Request Resep
             </Link>
           )}

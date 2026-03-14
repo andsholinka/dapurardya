@@ -1,7 +1,6 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
 import type { MemberSession } from "@/lib/auth";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
@@ -11,24 +10,29 @@ import Link from "next/link";
 export default function MemberDashboard({ session, requests }: { session: MemberSession; requests: RecipeRequest[] }) {
   const router = useRouter();
 
-  async function logout() {
-    await fetch("/api/member/logout", { method: "POST" });
-    await signOut({ callbackUrl: "/" });
-  }
-
   return (
-    <div className="container max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <p className="text-lg font-semibold">Halo, {session.name} 👋</p>
-          <p className="text-sm text-muted-foreground">{session.email}</p>
+    <div className="container max-w-2xl mx-auto px-4 py-4 sm:py-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-2">
+            <span className="truncate">Halo, {session.name}</span>
+            <span className="shrink-0">👋</span>
+          </h1>
+          <p className="text-xs sm:text-sm text-muted-foreground truncate">{session.email}</p>
         </div>
-        <div className="flex gap-2 items-center">
-          <Link href="/member/saved" className="inline-flex items-center gap-1.5 text-sm h-8 px-3 rounded-xl border-2 border-border hover:border-primary/50 transition-colors whitespace-nowrap">
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2">
+          <Link 
+            href="/member/saved" 
+            className="flex items-center justify-center gap-1.5 text-xs font-semibold h-9 w-full sm:w-40 rounded-xl border-2 border-border bg-card hover:border-primary/50 transition-all shadow-sm"
+          >
             🔖 Tersimpan
           </Link>
-          <RequestModal memberId={session.id} memberName={session.name} />
-          <Button variant="outline" size="sm" className="rounded-xl" onClick={logout}>Keluar</Button>
+          <RequestModal 
+            memberId={session.id} 
+            memberName={session.name} 
+            size="sm" 
+            className="h-9 text-xs font-semibold w-full sm:w-40 shadow-sm" 
+          />
         </div>
       </div>
 

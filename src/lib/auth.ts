@@ -54,24 +54,44 @@ export interface MemberSession {
 }
 
 export async function getMemberSession(): Promise<MemberSession | null> {
-  // Cek NextAuth session (Google login) dulu
   const nextAuthSession = await auth();
-  if (nextAuthSession?.user?.email) {
-    return {
-      id: nextAuthSession.user.email,
-      name: nextAuthSession.user.name || nextAuthSession.user.email,
-      email: nextAuthSession.user.email,
-    };
+  let email = nextAuthSession?.user?.email;
+  let name = nextAuthSession?.user?.name;
+
+  if (!email) {
+    const cookieStore = await cookies();
+    const val = cookieStore.get(MEMBER_COOKIE)?.value;
+    if (val) {
+      try {
+        const decoded = JSON.parse(Buffer.from(val, "base64").toString("utf-8")) as MemberSession;
+        email = decoded.email;
+        name = decoded.name;
+      } catch {}
+    }
   }
-  // Fallback ke cookie session (email/password login)
-  const cookieStore = await cookies();
-  const val = cookieStore.get(MEMBER_COOKIE)?.value;
-  if (!val) return null;
+
+  if (!email) return null;
+
+  // Mencoba mengambil nama terbaru dari DB agar perubahan nama langsung terlihat
   try {
-    return JSON.parse(Buffer.from(val, "base64").toString("utf-8")) as MemberSession;
-  } catch {
-    return null;
+    const db = await getDb();
+    const member = await db.collection("members").findOne({ email: email.toLowerCase() });
+    if (member) {
+      return {
+        id: member._id.toString(),
+        name: member.name || name || email,
+        email: email,
+      };
+    }
+  } catch (e) {
+    console.error("[AUTH] getMemberSession DB error:", e);
   }
+
+  return {
+    id: email,
+    name: name || email,
+    email: email,
+  };
 }
 
 export async function setMemberSession(member: MemberSession): Promise<void> {

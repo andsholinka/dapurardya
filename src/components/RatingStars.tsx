@@ -159,6 +159,14 @@ export function RatingStars({ recipeId, isMember, compact = false, initialAvg = 
           <a href="/member/auth?tab=login" className="text-primary underline">Login</a> untuk memberi rating
         </p>
       )}
+
+      {/* Feedback sukses di bawah bintang */}
+      {success && (
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-green-600 animate-in fade-in slide-in-from-left-2 duration-300">
+          <div className="size-1.5 rounded-full bg-green-500 animate-pulse" />
+          Rating berhasil disimpan!
+        </div>
+      )}
       {isMember && userRating && (
         <div className="mt-4">
           {!showForm ? (
@@ -167,7 +175,6 @@ export function RatingStars({ recipeId, isMember, compact = false, initialAvg = 
                 <p className="text-xs text-muted-foreground">
                   Kamu memberi <span className="font-bold text-foreground">{userRating} bintang</span>
                 </p>
-                {success && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full animate-pulse">Berhasil disimpan!</span>}
               </div>
               <Button 
                 variant="ghost" 

@@ -176,66 +176,81 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
               required
             />
           </div>
-          <div>
-            <Label htmlFor="category">Kategori</Label>
-            <select
-              id="category"
-              value={form.category}
-              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              className="mt-1 w-full rounded-xl border-2 border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-            >
-              <option value="Makanan">Makanan</option>
-              <option value="Minuman">Minuman</option>
-              <option value="Cemilan">Cemilan</option>
-            </select>
-          </div>
-          <div>
-            <Label>Tags (opsional)</Label>
-            <div className="mt-1 flex flex-wrap gap-1.5 mb-2">
-              {(form.tags ?? []).map((tag) => (
-                <span key={tag} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                  #{tag}
-                  <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive">
-                    <X className="size-3" />
-                  </button>
-                </span>
-              ))}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
+            <div>
+              <Label htmlFor="category">Kategori</Label>
+              <select
+                id="category"
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="mt-1 w-full rounded-xl border-2 border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring h-10"
+              >
+                <option value="Makanan">Makanan</option>
+                <option value="Minuman">Minuman</option>
+                <option value="Cemilan">Cemilan</option>
+              </select>
             </div>
-            <div className="flex gap-2">
+            <div>
+              <Label htmlFor="servings">Porsi Masakan</Label>
               <Input
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === ",") {
-                    e.preventDefault();
-                    addTag(tagInput);
-                  }
-                }}
-                placeholder="Ketik tag lalu Enter (misal: pedas, vegetarian)"
-                className="rounded-xl border-2 text-sm"
+                id="servings"
+                type="number"
+                min={1}
+                placeholder="Contoh: 2"
+                value={form.servings ?? ""}
+                onChange={(e) => setForm((f) => ({ ...f, servings: e.target.value ? Number(e.target.value) : undefined }))}
+                className="mt-1 rounded-xl border-2 h-10"
               />
-              <Button type="button" variant="outline" size="sm" onClick={() => addTag(tagInput)} className="rounded-xl shrink-0">
-                Tambah
-              </Button>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Pisahkan dengan Enter atau koma</p>
+            <div>
+              <Label>Tags (opsional)</Label>
+              <div className="flex gap-2 items-center mt-1">
+                <Input
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === ",") {
+                      e.preventDefault();
+                      addTag(tagInput);
+                    }
+                  }}
+                  placeholder="Tambah tag..."
+                  className="rounded-xl border-2 text-sm h-10"
+                />
+                <Button type="button" variant="outline" onClick={() => addTag(tagInput)} className="rounded-xl shrink-0 h-10 px-4">
+                  Tambah
+                </Button>
+              </div>
+              {form.tags && form.tags.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {form.tags.map((tag) => (
+                    <span key={tag} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full border border-primary/20 animate-in zoom-in-95">
+                      #{tag}
+                      <button type="button" onClick={() => removeTag(tag)} className="hover:text-destructive transition-colors">
+                        <X className="size-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
           <div>
             <Label>Gambar (opsional)</Label>
             <div className="mt-1 space-y-2">
               {form.image ? (
-                <div className="relative w-full h-48 rounded-xl overflow-hidden border-2">
+                <div className="relative w-full h-48 rounded-xl overflow-hidden border-2 shadow-sm">
                   <Image src={form.image} alt="Preview" fill className="object-cover" />
                   <button
                     type="button"
                     onClick={() => setForm((f) => ({ ...f, image: "" }))}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80"
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 shadow-lg"
                   >
                     <X className="size-4" />
                   </button>
                 </div>
               ) : (
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors bg-muted/20">
                   <ImagePlus className="size-6 text-muted-foreground mb-1" />
                   <span className="text-sm text-muted-foreground">
                     {uploading ? "Mengupload..." : "Klik untuk pilih gambar"}
@@ -249,41 +264,6 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
                   />
                 </label>
               )}
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <div>
-              <Label htmlFor="prep">Persiapan (menit)</Label>
-              <Input
-                id="prep"
-                type="number"
-                min={0}
-                value={form.prepTimeMinutes ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, prepTimeMinutes: e.target.value ? Number(e.target.value) : undefined }))}
-                className="mt-1 rounded-xl border-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="cook">Memasak (menit)</Label>
-              <Input
-                id="cook"
-                type="number"
-                min={0}
-                value={form.cookTimeMinutes ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, cookTimeMinutes: e.target.value ? Number(e.target.value) : undefined }))}
-                className="mt-1 rounded-xl border-2"
-              />
-            </div>
-            <div>
-              <Label htmlFor="servings">Porsi</Label>
-              <Input
-                id="servings"
-                type="number"
-                min={1}
-                value={form.servings ?? ""}
-                onChange={(e) => setForm((f) => ({ ...f, servings: e.target.value ? Number(e.target.value) : undefined }))}
-                className="mt-1 rounded-xl border-2"
-              />
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -304,7 +284,7 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
               onChange={(e) => setForm((f) => ({ ...f, memberOnly: e.target.checked }))}
               className="rounded border-input"
             />
-            <Label htmlFor="memberOnly">Khusus Member (detail hanya untuk member terdaftar)</Label>
+            <Label htmlFor="memberOnly">Khusus Member</Label>
           </div>
         </CardContent>
       </Card>
@@ -312,9 +292,6 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
       <Card className="rounded-2xl border-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <h2 className="font-semibold">Bahan-bahan</h2>
-          <Button type="button" variant="outline" size="sm" onClick={addIngredient} className="rounded-xl">
-            <Plus className="size-4 mr-1" /> Tambah
-          </Button>
         </CardHeader>
         <CardContent className="space-y-2">
           {form.ingredients.map((ing, i) => (
@@ -322,8 +299,15 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
               <Input
                 value={ing}
                 onChange={(e) => setIngredient(i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addIngredient();
+                  }
+                }}
                 placeholder={`Bahan ${i + 1}`}
                 className="rounded-xl border-2"
+                autoFocus={i > 0 && i === form.ingredients.length - 1}
               />
               <Button
                 type="button"
@@ -343,21 +327,25 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
       <Card className="rounded-2xl border-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <h2 className="font-semibold">Langkah</h2>
-          <Button type="button" variant="outline" size="sm" onClick={addStep} className="rounded-xl">
-            <Plus className="size-4 mr-1" /> Tambah
-          </Button>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-4">
           {form.steps.map((step, i) => (
             <div key={i} className="flex gap-2">
-              <span className="flex items-center justify-center w-8 h-9 rounded-lg bg-muted text-sm font-medium shrink-0">
+              <span className="flex items-center justify-center w-8 h-10 rounded-lg bg-muted text-sm font-medium shrink-0">
                 {i + 1}
               </span>
               <Textarea
                 value={step}
                 onChange={(e) => setStep(i, e.target.value)}
-                placeholder={`Langkah ${i + 1}`}
-                className="rounded-xl border-2 min-h-[60px] flex-1"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    addStep();
+                  }
+                }}
+                placeholder={`Terangkan langkah ${i + 1}...`}
+                className="rounded-xl border-2 min-h-[40px] h-10 flex-1 py-2"
+                autoFocus={i > 0 && i === form.steps.length - 1}
               />
               <Button
                 type="button"
@@ -365,7 +353,7 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
                 size="icon"
                 onClick={() => removeStep(i)}
                 disabled={form.steps.length <= 1}
-                className="shrink-0 rounded-xl"
+                className="shrink-0 rounded-xl size-10"
               >
                 <Trash2 className="size-4" />
               </Button>

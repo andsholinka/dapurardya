@@ -54,9 +54,9 @@ export function RecipeCard({ recipe, className, isMember = false }: RecipeCardPr
           {recipe.description}
         </p>
         <div className="flex items-center justify-between mt-2 flex-wrap gap-1">
-          {(recipe.prepTimeMinutes != null || recipe.cookTimeMinutes != null) && (
+          {recipe.servings != null && (
             <p className="text-xs text-muted-foreground">
-              ⏱ {(recipe.prepTimeMinutes || 0) + (recipe.cookTimeMinutes || 0)} menit
+              🍽 {recipe.servings} Porsi
             </p>
           )}
           {(recipe.ratingCount ?? 0) > 0 && (

@@ -6,17 +6,21 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StepTimer } from "./StepTimer";
+import { CookMode } from "./CookMode";
+import { Play } from "lucide-react";
 
 interface CookingInstructionsProps {
   recipeId: string;
+  recipeTitle: string;
   ingredients: string[];
   steps: string[];
 }
 
-export function CookingInstructions({ recipeId, ingredients, steps }: CookingInstructionsProps) {
+export function CookingInstructions({ recipeId, recipeTitle, ingredients, steps }: CookingInstructionsProps) {
   const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
   const [checkedSteps, setCheckedSteps] = useState<Record<number, boolean>>({});
   const [isClient, setIsClient] = useState(false);
+  const [showCookMode, setShowCookMode] = useState(false);
 
   // Load progress from localStorage
   useEffect(() => {
@@ -75,17 +79,34 @@ export function CookingInstructions({ recipeId, ingredients, steps }: CookingIns
           <ChefHat className="size-5" />
           <h2 className="font-bold text-lg">Mode Memasak</h2>
         </div>
-        {(Object.keys(checkedIngredients).length > 0 || Object.keys(checkedSteps).length > 0) && (
+        <div className="flex items-center gap-2">
           <Button 
-            variant="ghost" 
             size="sm" 
-            onClick={resetProgress}
-            className="text-xs text-muted-foreground hover:text-destructive rounded-xl"
+            onClick={() => setShowCookMode(true)}
+            className="rounded-xl bg-primary text-primary-foreground shadow-sm hover:scale-105 transition-transform"
           >
-            <RotateCcw className="size-3 mr-1" /> Reset Progress
+            <Play className="size-3 mr-1 fill-current" /> Buka Fokus Mode
           </Button>
-        )}
+          {(Object.keys(checkedIngredients).length > 0 || Object.keys(checkedSteps).length > 0) && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={resetProgress}
+              className="text-xs text-muted-foreground hover:text-destructive rounded-xl"
+            >
+              <RotateCcw className="size-3 mr-1" /> Reset
+            </Button>
+          )}
+        </div>
       </div>
+
+      {showCookMode && (
+        <CookMode 
+          recipeTitle={recipeTitle} 
+          steps={steps} 
+          onClose={() => setShowCookMode(false)} 
+        />
+      )}
 
       {/* Bahan-bahan Checklist */}
       <Card className="rounded-2xl border-2 transition-all hover:border-primary/20">

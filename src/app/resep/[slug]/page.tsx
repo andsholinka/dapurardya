@@ -172,6 +172,7 @@ export default async function RecipeDetailPage({ params }: PageProps) {
         <div className="mt-8 mb-6">
           <CookingInstructions 
             recipeId={recipe._id!} 
+            recipeTitle={recipe.title}
             ingredients={recipe.ingredients} 
             steps={recipe.steps} 
           />

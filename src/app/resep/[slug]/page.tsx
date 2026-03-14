@@ -12,6 +12,7 @@ import { ShareButton } from "@/components/ShareButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { RecipeCard } from "@/components/RecipeCard";
 import { RatingStars } from "@/components/RatingStars";
+import { CookingInstructions } from "@/components/CookingInstructions";
 
 const COLLECTION = "recipes";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
@@ -168,31 +169,14 @@ export default async function RecipeDetailPage({ params }: PageProps) {
           <RatingStars recipeId={recipe._id!} isMember={isMember} />
         </div>
 
-        <Card className="rounded-2xl border-2 mb-6">
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Bahan-bahan</h2>
-          </CardHeader>
-          <CardContent>
-            <ul className="list-disc list-inside space-y-1 text-foreground">
-              {recipe.ingredients.map((ing, i) => (
-                <li key={i}>{ing}</li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <div className="mt-8 mb-6">
+          <CookingInstructions 
+            recipeId={recipe._id!} 
+            ingredients={recipe.ingredients} 
+            steps={recipe.steps} 
+          />
+        </div>
 
-        <Card className="rounded-2xl border-2">
-          <CardHeader>
-            <h2 className="text-lg font-semibold">Langkah</h2>
-          </CardHeader>
-          <CardContent>
-            <ol className="list-decimal list-inside space-y-3 text-foreground">
-              {recipe.steps.map((step, i) => (
-                <li key={i}>{step}</li>
-              ))}
-            </ol>
-          </CardContent>
-        </Card>
 
         {relatedRecipes.length > 0 && (
           <div className="mt-10">

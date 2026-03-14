@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import { getAdminSession, getMemberSession } from "@/lib/auth";
 import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
@@ -9,8 +9,8 @@ cloudinary.config({
 });
 
 export async function POST(request: NextRequest) {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) {
+  const [isAdmin, member] = await Promise.all([getAdminSession(), getMemberSession()]);
+  if (!isAdmin && !member) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

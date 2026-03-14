@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/mongodb";
 import { setMemberSession } from "@/lib/auth";
 import type { MemberDoc } from "@/types/member";
@@ -23,6 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     await setMemberSession({ id: member._id!.toString(), name: member.name, email: member.email });
+    revalidatePath("/member");
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[MEMBER LOGIN]", e);

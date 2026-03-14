@@ -4,6 +4,8 @@ import { getDb } from "@/lib/mongodb";
 import type { RecipeRequestDoc, RecipeRequest } from "@/types/recipe-request";
 import MemberDashboard from "./MemberDashboard";
 
+export const dynamic = "force-dynamic";
+
 async function getMemberRequests(memberId: string): Promise<RecipeRequest[]> {
   try {
     const db = await getDb();

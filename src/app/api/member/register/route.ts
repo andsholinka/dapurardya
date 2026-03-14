@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/mongodb";
 import { setMemberSession } from "@/lib/auth";
 import type { MemberDoc } from "@/types/member";
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
     } as MemberDoc);
 
     await setMemberSession({ id: result.insertedId.toString(), name: name.trim(), email: email.toLowerCase().trim() });
+    revalidatePath("/member");
     return NextResponse.json({ success: true });
   } catch (e) {
     console.error("[REGISTER]", e);

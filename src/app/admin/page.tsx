@@ -4,6 +4,7 @@ import type { Recipe, RecipeDoc } from "@/types/recipe";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
 import { buttonVariants } from "@/lib/button-variants";
 import { AdminRecipeCard } from "@/components/AdminRecipeCard";
+import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { cn } from "@/lib/utils";
 
 async function getAllRecipes(): Promise<(Recipe & { _id?: string })[]> {
@@ -21,11 +22,52 @@ async function getPendingCount(): Promise<number> {
   } catch { return 0; }
 }
 
+async function getAnalytics() {
+  try {
+    const db = await getDb();
+
+    const [totalRecipes, totalMembers, totalRequests, pendingRequests] = await Promise.all([
+      db.collection("recipes").countDocuments({ published: true }),
+      db.collection("members").countDocuments({}),
+      db.collection("recipe_requests").countDocuments({}),
+      db.collection("recipe_requests").countDocuments({ status: "pending" }),
+    ]);
+
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    const requestsByMonth = await db.collection("recipe_requests").aggregate([
+      { $match: { createdAt: { $gte: sixMonthsAgo } } },
+      { $group: { _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } }, count: { $sum: 1 } } },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]).toArray();
+
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+    const chartData = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const year = d.getFullYear();
+      const month = d.getMonth() + 1;
+      const found = requestsByMonth.find((r) => r._id.year === year && r._id.month === month);
+      chartData.push({ month: monthNames[month - 1], requests: found?.count ?? 0 });
+    }
+
+    return { totalRecipes, totalMembers, totalRequests, pendingRequests, chartData };
+  } catch {
+    return { totalRecipes: 0, totalMembers: 0, totalRequests: 0, pendingRequests: 0, chartData: [] };
+  }
+}
+
 export default async function AdminPage() {
-  const [recipes, pendingCount] = await Promise.all([getAllRecipes(), getPendingCount()]);
+  const [recipes, pendingCount, analytics] = await Promise.all([getAllRecipes(), getPendingCount(), getAnalytics()]);
 
   return (
     <>
+      <AdminAnalytics data={analytics} />
+
       <div className="flex items-center justify-between mb-6">
         <Link href="/admin/requests" className={cn(buttonVariants({ variant: "outline" }), "rounded-xl relative")}>
           Request Resep

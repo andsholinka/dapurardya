@@ -6,6 +6,7 @@ import type { MemberSession } from "@/lib/auth";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function MemberDashboard({ session, requests }: { session: MemberSession; requests: RecipeRequest[] }) {
   const router = useRouter();
@@ -22,7 +23,10 @@ export default function MemberDashboard({ session, requests }: { session: Member
           <p className="text-lg font-semibold">Halo, {session.name} 👋</p>
           <p className="text-sm text-muted-foreground">{session.email}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center">
+          <Link href="/member/saved" className="inline-flex items-center gap-1.5 text-sm h-8 px-3 rounded-xl border-2 border-border hover:border-primary/50 transition-colors whitespace-nowrap">
+            🔖 Tersimpan
+          </Link>
           <RequestModal memberId={session.id} memberName={session.name} />
           <Button variant="outline" size="sm" className="rounded-xl" onClick={logout}>Keluar</Button>
         </div>

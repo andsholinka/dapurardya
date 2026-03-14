@@ -9,6 +9,7 @@ import { buttonVariants } from "@/lib/button-variants";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ShareButton } from "@/components/ShareButton";
+import { BookmarkButton } from "@/components/BookmarkButton";
 
 const COLLECTION = "recipes";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
@@ -80,6 +81,10 @@ export default async function RecipeDetailPage({ params }: PageProps) {
     }
   }
 
+  const member = await getMemberSession();
+  const isAdmin = await getAdminSession();
+  const isMember = !!(member || isAdmin);
+
   const imgSrc = recipe.image || placeholderImage;
   const isDataUrl = imgSrc.startsWith("data:");
 
@@ -125,6 +130,7 @@ export default async function RecipeDetailPage({ params }: PageProps) {
             </p>
           )}
           <ShareButton title={recipe.title} />
+          <BookmarkButton recipeId={recipe._id!} isMember={isMember} />
         </div>
         <p className="text-foreground mb-6">{recipe.description}</p>
 

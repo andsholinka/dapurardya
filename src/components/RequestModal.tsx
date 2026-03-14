@@ -44,7 +44,7 @@ export function RequestModal({ memberId, memberName }: RequestModalProps) {
 
   return (
     <>
-      <Button variant="outline" onClick={openModal} className="rounded-xl">
+      <Button variant="outline" size="sm" onClick={openModal} className="rounded-xl">
         Request Resep
       </Button>
 

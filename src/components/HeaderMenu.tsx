@@ -75,9 +75,14 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
               Dashboard Admin
             </Link>
           ) : (
-            <Link href="/member" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
-              Dashboard
-            </Link>
+            <>
+              <Link href="/member" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
+                Dashboard
+              </Link>
+              <Link href="/member/saved" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t" onClick={() => setOpen(false)}>
+                Resep Tersimpan
+              </Link>
+            </>
           )}
           <button onClick={logout} className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors border-t">
             Keluar

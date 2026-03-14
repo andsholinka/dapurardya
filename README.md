@@ -1,60 +1,82 @@
-# Dapur Ardya
+# 🍳 Dapur Ardya
 
-Website kumpulan resep masakan – tampilan girly, nyaman di HP, siap PWA. Dibangun dengan Next.js, Tailwind, shadcn/ui, dan MongoDB.
+**Dapur Ardya** adalah platform resep masakan modern yang dirancang khusus untuk kenyamanan memasak di rumah. Dengan desain yang *girly*, hangat, dan premium, aplikasi ini memberikan pengalaman pengguna yang sangat halus (*smooth*) terutama pada perangkat mobile.
 
-## Fitur
+---
 
-- **Publik:** Semua resep, cari resep, halaman detail resep
-- **Admin:** Login di `/login`, kelola resep (tambah, edit, hapus) di `/admin`
-- **PWA:** Manifest disediakan; tambah icon 192x192 dan 512x512 di `public/` sebagai `icon-192.png` dan `icon-512.png` untuk install ke HP
+## ✨ Fitur Utama
 
-## Setup
+### 1. Eksplorasi & Publik
+- **Koleksi Resep Premium**: Berbagai resep dengan foto menarik, instruksi detail (bahan, langkah, waktu persiapan/masak, dan porsi).
+- **Omnisearch**: Pencarian cepat resep berdasarkan nama atau kategori.
+- **Related Recipes**: Rekomendasi resep serupa untuk inspirasi harian.
+- **Smart Sharing**: Berbagi resep favorit ke media sosial dengan tombol bagikan yang cerdas.
 
-### 1. Install dependensi
+### 2. Member Area (Fitur Premium)
+- **Review & Photo Reviews**: Member dapat memberikan rating bintang, komentar, dan **mengunggah foto hasil masakan mereka**.
+- **Personalized Bookmark**: Simpan resep favorit ke koleksi pribadi ("Simpan Resep").
+- **Recipe Request**: Fitur khusus bagi member untuk meminta resep tertentu kepada admin.
+- **Member Dashboard**: Pantau histori request dan kelola aktivitas member.
 
+### 3. Cook Mode (Fokus Mode) 🚀
+*Fitur unggulan untuk pengalaman memasak tanpa gangguan di dapur:*
+- **Interface Full-Screen**: Teks instruksi raksasa agar mudah dibaca dari kejauhan (tanpa perlu memegang HP).
+- **Anti-Sleep (Wake Lock API)**: Layar HP akan **tetap menyala** (tidak akan terkunci otomatis) selama Anda berada dalam Mode Memasak.
+- **Integrated Smart Timer**: Timer otomatis aktif jika sistem mendeteksi instruksi waktu pada langkah memasak, lengkap dengan **notifikasi suara (audio alert)** saat durasi selesai.
+- **Progress Tracking**: Navigasi per-langkah dengan bar progres yang jelas.
+
+### 4. Admin Dashboard
+- **Analytics Management**: Memantau statistik dasar resep.
+- **Recipe Management**: CRUD lengkap (Create, Read, Update, Delete) resep dengan integrasi Cloudinary untuk foto.
+- **Member Request Management**: Menanggapi dan memproses permintaan resep dari member.
+
+### 5. PWA (Progressive Web App)
+- **Installable**: Dapat diinstal di HP (Android/iOS) atau Desktop layaknya aplikasi native.
+- **Mobile First**: Navigasi yang jempol-friendly dan performa tinggi.
+
+---
+
+## 🛠 Tech Stack
+
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Frontend**: React 19, Tailwind CSS v4, shadcn/ui
+- **Icons**: Lucide React
+- **Database**: MongoDB (via MongoDB Driver)
+- **Authentication**: Custom Authentication with `bcryptjs` & `getMemberSession`
+- **Media**: Cloudinary API (Image Hosting)
+- **Browser API**: Screen Wake Lock API (for Cook Mode)
+
+---
+
+## 🚀 Cara Menjalankan
+
+### 1. Kloning & Install Dependensi
 ```bash
 npm install
 ```
 
-### 2. Environment
+### 2. Konfigurasi Environment
+Salin `.env.example` ke `.env.local` dan lengkapi variabel berikut:
+- `MONGODB_URI`: String koneksi MongoDB.
+- `ADMIN_PASSWORD_HASH`: Hash password untuk admin (Gunakan script hash-password).
+- `CLOUDINARY_URL`: API Cloudinary untuk upload gambar.
 
-Salin `.env.example` ke `.env.local` dan isi:
-
-- **MONGODB_URI** – connection string MongoDB (wajib agar resep tersimpan)
-- **MONGODB_DB_NAME** – nama database (default: `dapurardya`)
-- **ADMIN_PASSWORD_HASH** – hash bcrypt password admin
-
-Generate hash password:
-
+### 3. Generate Admin Password
 ```bash
-node scripts/hash-password.js "password-anda"
+node scripts/hash-password.js "password_pilihan_anda"
 ```
 
-Salin output ke `.env.local` sebagai `ADMIN_PASSWORD_HASH=...`
-
-### 3. Jalankan
-
+### 4. Jalankan Development
 ```bash
 npm run dev
 ```
+Buka [http://localhost:3000](http://localhost:3000).
 
-Buka [http://localhost:3000](http://localhost:3000). Admin: [http://localhost:3000/login](http://localhost:3000/login).
+---
 
-## Build production
+## 📸 Media & Aset
+Aset gambar disimpan di Cloudinary. Pastikan API key sudah terkonfigurasi untuk fitur upload foto review dan manajemen resep.
 
-```bash
-npm run build
-npm start
-```
+---
 
-## PWA
-
-- `public/manifest.json` sudah disiapkan.
-- Tambahkan `public/icon-192.png` dan `public/icon-512.png` untuk ikon install di perangkat.
-- Theme color dan background color sudah diset nuansa pink/rose.
-
-## Tech stack
-
-- Next.js (App Router), React, TypeScript
-- Tailwind CSS v4, shadcn/ui
-- MongoDB
+**Dapur Ardya** – *Temani setiap langkah masakanmu dengan kasih sayang.* ✨

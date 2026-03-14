@@ -2,9 +2,10 @@ import type { ObjectId } from "mongodb";
 
 export interface RecipeRequest {
   _id?: string;
-  name: string;       // nama peminta
-  recipeName: string; // nama resep yang diminta
-  message?: string;   // pesan tambahan
+  memberId?: string;  // opsional, kalau request dari member
+  name: string;
+  recipeName: string;
+  message?: string;
   status: "pending" | "done";
   createdAt: Date;
 }

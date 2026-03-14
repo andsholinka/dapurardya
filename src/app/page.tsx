@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { buttonVariants } from "@/lib/button-variants";
 import { getDb } from "@/lib/mongodb";
+import { getMemberSession } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { RecipeCard } from "@/components/RecipeCard";
-import { RequestForm } from "@/components/RequestForm";
+import { RequestModal } from "@/components/RequestModal";
 
 const COLLECTION = "recipes";
 
@@ -24,7 +25,7 @@ async function getFeaturedRecipes(): Promise<(Recipe & { _id?: string })[]> {
 }
 
 export default async function HomePage() {
-  const recipes = await getFeaturedRecipes();
+  const [recipes, member] = await Promise.all([getFeaturedRecipes(), getMemberSession()]);
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-12">
@@ -39,6 +40,13 @@ export default async function HomePage() {
           <Link href="/resep" className={cn(buttonVariants({ size: "lg" }), "rounded-xl")}>
             Lihat Semua Resep
           </Link>
+          {member ? (
+            <RequestModal memberId={member.id} memberName={member.name} />
+          ) : (
+            <Link href="/member/auth?tab=register" className={cn(buttonVariants({ variant: "outline" }), "rounded-xl")}>
+              Request Resep
+            </Link>
+          )}
         </div>
       </section>
 
@@ -64,10 +72,6 @@ export default async function HomePage() {
             </Link>
           </div>
         )}
-      </section>
-
-      <section className="mt-12">
-        <RequestForm />
       </section>
     </div>
   );

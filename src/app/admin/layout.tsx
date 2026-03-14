@@ -23,7 +23,6 @@ export default async function AdminLayout({
           <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}>
             Beranda
           </Link>
-          <LogoutButton />
         </div>
       </div>
       {children}

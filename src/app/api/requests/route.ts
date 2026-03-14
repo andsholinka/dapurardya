@@ -9,7 +9,7 @@ const COLLECTION = "recipe_requests";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, recipeName, message } = body;
+    const { name, recipeName, message, memberId } = body;
 
     if (!name?.trim() || !recipeName?.trim()) {
       return NextResponse.json({ error: "Nama dan nama resep wajib diisi" }, { status: 400 });
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
     const db = await getDb();
     const col = db.collection<RecipeRequestDoc>(COLLECTION);
     const doc: Omit<RecipeRequestDoc, "_id"> = {
+      ...(memberId ? { memberId } : {}),
       name: name.trim(),
       recipeName: recipeName.trim(),
       message: message?.trim() || undefined,

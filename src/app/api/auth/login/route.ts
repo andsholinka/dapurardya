@@ -11,6 +11,7 @@ export async function POST(request: NextRequest) {
     }
 
     const valid = await verifyAdminCredentials(email, password);
+    console.log("[ADMIN LOGIN] email:", email, "valid:", valid);
     if (!valid) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
     }

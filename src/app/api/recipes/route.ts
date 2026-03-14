@@ -86,13 +86,13 @@ export async function POST(request: NextRequest) {
       createdAt: now,
       updatedAt: now,
     };
-    console.log("[INSERT] Attempting to insert recipe:", JSON.stringify(doc));
+    // console.log("[INSERT] Attempting to insert recipe:", JSON.stringify(doc));
     const result = await col.insertOne(doc as RecipeDoc);
     if (!result.insertedId) {
       console.error("[INSERT] Failed: insertedId is null");
       return NextResponse.json({ error: "Gagal menyimpan resep" }, { status: 500 });
     }
-    console.log("[INSERT] Success, insertedId:", result.insertedId.toString());
+    // console.log("[INSERT] Success, insertedId:", result.insertedId.toString());
     return NextResponse.json({
       _id: result.insertedId.toString(),
       ...doc,

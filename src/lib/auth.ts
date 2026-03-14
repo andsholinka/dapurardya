@@ -1,13 +1,21 @@
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import { getDb } from "@/lib/mongodb";
 
 const ADMIN_COOKIE = "admin_session";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
+const COLLECTION = "admins";
 
-export async function verifyAdminPassword(password: string): Promise<boolean> {
-  const hash = process.env.ADMIN_PASSWORD_HASH;
-  if (!hash) return false;
-  return bcrypt.compare(password, hash);
+export async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
+  try {
+    const db = await getDb();
+    const admin = await db.collection(COLLECTION).findOne({ email: email.toLowerCase().trim() });
+    if (!admin) return false;
+    return bcrypt.compare(password, admin.passwordHash);
+  } catch (e) {
+    console.error("[AUTH] verifyAdminCredentials error:", e);
+    return false;
+  }
 }
 
 export async function setAdminSession(): Promise<void> {

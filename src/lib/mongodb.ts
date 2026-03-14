@@ -28,3 +28,13 @@ export async function closeDb(): Promise<void> {
     db = null;
   }
 }
+
+export async function checkDbConnection(): Promise<{ connected: boolean; message: string }> {
+  try {
+    const database = await getDb();
+    await database.command({ ping: 1 });
+    return { connected: true, message: `Connected to database "${dbName}" successfully.` };
+  } catch (error) {
+    return { connected: false, message: `Connection failed: ${(error as Error).message}` };
+  }
+}

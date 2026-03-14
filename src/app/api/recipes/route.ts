@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
-import type { Recipe, RecipeInput } from "@/types/recipe";
-import { ObjectId } from "mongodb";
+import type { Recipe, RecipeDoc, RecipeInput } from "@/types/recipe";
 
 const COLLECTION = "recipes";
 
@@ -14,7 +13,7 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category")?.trim() || "";
     const admin = await getAdminSession();
     const db = await getDb();
-    const col = db.collection<Recipe>(COLLECTION);
+    const col = db.collection<RecipeDoc>(COLLECTION);
 
     const filter: Record<string, unknown> = {};
     if (!admin) filter.published = true;
@@ -63,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
     const slug = slugify(title);
     const db = await getDb();
-    const col = db.collection<Recipe>(COLLECTION);
+    const col = db.collection<RecipeDoc>(COLLECTION);
     const existing = await col.findOne({ slug });
     if (existing) {
       return NextResponse.json(
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
     const now = new Date();
-    const doc: Recipe = {
+    const doc: Omit<RecipeDoc, "_id"> = {
       title: title.trim(),
       slug,
       description: description.trim(),
@@ -87,13 +86,19 @@ export async function POST(request: NextRequest) {
       createdAt: now,
       updatedAt: now,
     };
-    const result = await col.insertOne(doc);
+    console.log("[INSERT] Attempting to insert recipe:", JSON.stringify(doc));
+    const result = await col.insertOne(doc as RecipeDoc);
+    if (!result.insertedId) {
+      console.error("[INSERT] Failed: insertedId is null");
+      return NextResponse.json({ error: "Gagal menyimpan resep" }, { status: 500 });
+    }
+    console.log("[INSERT] Success, insertedId:", result.insertedId.toString());
     return NextResponse.json({
       _id: result.insertedId.toString(),
       ...doc,
     });
   } catch (e) {
-    console.error(e);
+    console.error("[INSERT] Exception:", e);
     return NextResponse.json(
       { error: "Gagal menyimpan resep" },
       { status: 500 }

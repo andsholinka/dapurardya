@@ -1,3 +1,5 @@
+import type { ObjectId } from "mongodb";
+
 export interface Recipe {
   _id?: string;
   title: string;
@@ -14,6 +16,9 @@ export interface Recipe {
   updatedAt: Date;
   published?: boolean;
 }
+
+/** MongoDB document type (collection uses ObjectId for _id) */
+export type RecipeDoc = Omit<Recipe, "_id"> & { _id?: ObjectId };
 
 export interface RecipeInput {
   title: string;

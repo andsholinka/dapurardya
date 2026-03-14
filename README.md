@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Dapur Ardya
 
-## Getting Started
+Website kumpulan resep masakan – tampilan girly, nyaman di HP, siap PWA. Dibangun dengan Next.js, Tailwind, shadcn/ui, dan MongoDB.
 
-First, run the development server:
+## Fitur
+
+- **Publik:** Semua resep, cari resep, halaman detail resep
+- **Admin:** Login di `/login`, kelola resep (tambah, edit, hapus) di `/admin`
+- **PWA:** Manifest disediakan; tambah icon 192x192 dan 512x512 di `public/` sebagai `icon-192.png` dan `icon-512.png` untuk install ke HP
+
+## Setup
+
+### 1. Install dependensi
+
+```bash
+npm install
+```
+
+### 2. Environment
+
+Salin `.env.example` ke `.env.local` dan isi:
+
+- **MONGODB_URI** – connection string MongoDB (wajib agar resep tersimpan)
+- **MONGODB_DB_NAME** – nama database (default: `dapurardya`)
+- **ADMIN_PASSWORD_HASH** – hash bcrypt password admin
+
+Generate hash password:
+
+```bash
+node scripts/hash-password.js "password-anda"
+```
+
+Salin output ke `.env.local` sebagai `ADMIN_PASSWORD_HASH=...`
+
+### 3. Jalankan
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000). Admin: [http://localhost:3000/login](http://localhost:3000/login).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## PWA
 
-To learn more about Next.js, take a look at the following resources:
+- `public/manifest.json` sudah disiapkan.
+- Tambahkan `public/icon-192.png` dan `public/icon-512.png` untuk ikon install di perangkat.
+- Theme color dan background color sudah diset nuansa pink/rose.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Next.js (App Router), React, TypeScript
+- Tailwind CSS v4, shadcn/ui
+- MongoDB

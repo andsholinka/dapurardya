@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Crown, Loader2, ShieldCheck, UserRound, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useGlobalLoading } from "./LoadingProvider";
 
 export interface AdminMemberSummary {
   id: string;
@@ -13,6 +14,7 @@ export interface AdminMemberSummary {
 }
 
 export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemberSummary[] }) {
+  const { setIsLoading } = useGlobalLoading();
   const [members, setMembers] = useState<AdminMemberSummary[]>(initialMembers);
   const [savingId, setSavingId] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -22,6 +24,7 @@ export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemb
     const nextCredits = parseInt(creditInputs[memberId] || "0");
     if (isNaN(nextCredits)) return;
 
+    setIsLoading(true);
     setSavingId(memberId);
     setFeedback("");
 
@@ -47,6 +50,7 @@ export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemb
       setFeedback((error as Error).message);
     } finally {
       setSavingId(null);
+      setIsLoading(false);
     }
   }
 

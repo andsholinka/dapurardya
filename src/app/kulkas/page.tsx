@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/RecipeCard";
 import Link from "next/link";
+import { useGlobalLoading } from "@/components/LoadingProvider";
 
 interface SuggestedRecipe {
   _id: string;
@@ -34,6 +35,7 @@ interface AIUsageStatus {
 
 export default function FridgePage() {
   const router = useRouter();
+  const { setIsLoading } = useGlobalLoading();
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -94,6 +96,7 @@ export default function FridgePage() {
       return;
     }
 
+    setIsLoading(true);
     setLoading(true);
     setSearched(true);
     setRequestError("");
@@ -119,6 +122,7 @@ export default function FridgePage() {
       setRequestError("Terjadi gangguan saat menghubungi Chef AI. Coba lagi sebentar.");
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   };
 

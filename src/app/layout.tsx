@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Quicksand } from "next/font/google";
 import "./globals.css";
+import NextTopLoader from 'nextjs-toploader';
 import { Header } from "@/components/Header";
 import { RegisterSW } from "@/components/RegisterSW";
 import { InstallPWA } from "@/components/InstallPWA";
@@ -45,6 +46,8 @@ export const viewport: Viewport = {
   userScalable: true,
 };
 
+import { LoadingProvider } from "@/components/LoadingProvider";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,18 +56,31 @@ export default function RootLayout({
   return (
     <html lang="id">
       <body className={`${quicksand.variable} font-sans antialiased min-h-screen flex flex-col`}>
+        <NextTopLoader 
+          color="#be185d" 
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false}
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #be185d,0 0 5px #be185d"
+        />
         <SessionProvider>
-          <Header />
-          <main className="flex-1 w-full">{children}</main>
-          <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
-            Dibuat oleh{" "}
-            <a href="https://taratech.web.id" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline underline-offset-2">
-              taratech.web.id
-            </a>
-          </footer>
-          <RegisterSW />
-          <InstallPWA />
-          <NotificationManager />
+          <LoadingProvider>
+            <Header />
+            <main className="flex-1 w-full">{children}</main>
+            <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
+              Dibuat oleh{" "}
+              <a href="https://taratech.web.id" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors underline underline-offset-2">
+                taratech.web.id
+              </a>
+            </footer>
+            <RegisterSW />
+            <InstallPWA />
+            <NotificationManager />
+          </LoadingProvider>
         </SessionProvider>
       </body>
     </html>

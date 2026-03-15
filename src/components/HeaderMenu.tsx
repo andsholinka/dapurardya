@@ -9,9 +9,11 @@ import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
 import { ChevronDown, User, Bell, BellOff, Loader2, Coins } from "lucide-react";
 import { subscribeUser, unsubscribeUser, getSubscription } from "@/lib/notifications";
+import { useGlobalLoading } from "./LoadingProvider";
 
 export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession | null; isAdmin?: boolean }) {
   const router = useRouter();
+  const { setIsLoading } = useGlobalLoading();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -68,15 +70,19 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
   }
 
   async function logout() {
-    if (isAdmin) {
-      await fetch("/api/auth/logout", { method: "POST" });
-      setOpen(false);
-      router.push("/");
-      router.refresh();
-    } else {
-      // Hapus cookie session (email/password) dan NextAuth session (Google)
-      await fetch("/api/member/logout", { method: "POST" });
-      await signOut({ callbackUrl: "/" });
+    setIsLoading(true);
+    try {
+      if (isAdmin) {
+        await fetch("/api/auth/logout", { method: "POST" });
+        setOpen(false);
+        router.push("/");
+        router.refresh();
+      } else {
+        await fetch("/api/member/logout", { method: "POST" });
+        await signOut({ callbackUrl: "/" });
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -88,6 +94,7 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault();
+    setIsLoading(true);
     setSavingName(true);
     setEditError("");
     try {
@@ -105,6 +112,7 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
       setEditError((err as Error).message);
     } finally {
       setSavingName(false);
+      setIsLoading(false);
     }
   }
 

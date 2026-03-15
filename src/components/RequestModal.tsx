@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useGlobalLoading } from "./LoadingProvider";
 
 interface RequestModalProps {
   memberId?: string;
@@ -20,6 +21,7 @@ interface RequestModalProps {
 
 export function RequestModal({ memberId, memberName, size, className }: RequestModalProps) {
   const router = useRouter();
+  const { setIsLoading } = useGlobalLoading();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: memberName || "", recipeName: "", message: "" });
   const [loading, setLoading] = useState(false);
@@ -66,6 +68,7 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
       return;
     }
 
+    setIsLoading(true);
     setLoading(true);
     setError("");
 
@@ -91,6 +94,7 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
       setError((err as Error).message);
     } finally {
       setLoading(false);
+      setIsLoading(false);
     }
   }
 

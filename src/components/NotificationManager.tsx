@@ -13,8 +13,11 @@ export function NotificationManager() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsSupported("serviceWorker" in navigator && "PushManager" in window);
-      setPermission(Notification.permission);
+      const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+      setIsSupported(supported);
+      if (supported) {
+        setPermission(Notification.permission);
+      }
     }
   }, []);
 

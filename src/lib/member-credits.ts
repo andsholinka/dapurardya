@@ -42,3 +42,12 @@ export async function recordCreditUsage(
     createdAt: new Date(),
   });
 }
+
+export async function addMemberCredits(db: Db, email: string, amount: number): Promise<boolean> {
+  const result = await db.collection("members").updateOne(
+    { email },
+    { $inc: { credits: amount } }
+  );
+
+  return result.modifiedCount > 0;
+}

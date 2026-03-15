@@ -65,11 +65,6 @@ export default function MemberDashboard({
               </p>
             </div>
           </div>
-          <Link href="/member/upgrade" className="shrink-0">
-            <Button className="rounded-xl w-full sm:w-auto">
-              Isi Ulang Credits
-            </Button>
-          </Link>
         </div>
       </div>
 

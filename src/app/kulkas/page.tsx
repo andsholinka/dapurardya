@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/RecipeCard";
 import Link from "next/link";
-import { useGlobalLoading } from "@/components/LoadingProvider";
 
 interface SuggestedRecipe {
   _id: string;
@@ -35,7 +34,6 @@ interface AIUsageStatus {
 
 export default function FridgePage() {
   const router = useRouter();
-  const { setIsLoading } = useGlobalLoading();
   const [ingredientInput, setIngredientInput] = useState("");
   const [ingredients, setIngredients] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -96,7 +94,6 @@ export default function FridgePage() {
       return;
     }
 
-    setIsLoading(true);
     setLoading(true);
     setSearched(true);
     setRequestError("");
@@ -122,7 +119,6 @@ export default function FridgePage() {
       setRequestError("Terjadi gangguan saat menghubungi Chef AI. Coba lagi sebentar.");
     } finally {
       setLoading(false);
-      setIsLoading(false);
     }
   };
 
@@ -274,7 +270,7 @@ export default function FridgePage() {
                 <div className="size-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
                 <BrainCircuit className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-primary" />
               </div>
-              <p className="font-semibold text-lg animate-pulse">Chef Ardya sedang meracik ide untukmu...</p>
+              <p className="font-semibold text-lg animate-pulse text-center">Chef Ardya sedang meracik ide untukmu...</p>
             </div>
           ) : results.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

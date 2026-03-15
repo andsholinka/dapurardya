@@ -17,58 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { getMemberSession } from "@/lib/auth";
 
-const plans = [
-  {
-    name: "Starter Credits",
-    badge: "Paling Murah",
-    price: "Rp 15.000",
-    cadence: "/10 Credits",
-    description: "Cocok untuk yang ingin mencoba fitur AI secara santai.",
-    highlights: [
-      "10 Credits siap pakai",
-      "Tanpa batas waktu (selamanya)",
-      "Bebas pakai untuk Chef AI",
-      "Bebas pakai untuk Request Resep",
-    ],
-    ctaLabel: "Ambil 10 Credits",
-    ctaHref: "#foto-qr",
-    featured: false,
-  },
-  {
-    name: "Basic Credits",
-    badge: "Paling Populer",
-    price: "Rp 25.000",
-    cadence: "/25 Credits",
-    description: "Pilihan terbaik untuk ritme masak harian keluarga.",
-    highlights: [
-      "25 Credits siap pakai",
-      "Lebih hemat Rp 12.500",
-      "Tanpa batas waktu",
-      "Bebas pakai untuk semua fitur",
-      "Prioritas update resep",
-    ],
-    ctaLabel: "Ambil 25 Credits",
-    ctaHref: "#foto-qr",
-    featured: true,
-  },
-  {
-    name: "Pro Credits",
-    badge: "Value Terbaik",
-    price: "Rp 40.000",
-    cadence: "/50 Credits",
-    description: "Untuk pecinta masak yang ingin eksplorasi tanpa ragu.",
-    highlights: [
-      "50 Credits siap pakai",
-      "Hemat besar (Hanya Rp 800/credit)",
-      "Tanpa batas waktu",
-      "Akses fitur prioritas",
-      "Dukungan penuh tim dapur",
-    ],
-    ctaLabel: "Ambil 50 Credits",
-    ctaHref: "#foto-qr",
-    featured: false,
-  },
-];
+import { TopUpPlans } from "@/components/TopUpPlans";
 
 const valuePoints = [
   "Rekomendasi resep dari bahan yang kamu punya di rumah",
@@ -78,32 +27,29 @@ const valuePoints = [
 
 const faqs = [
   {
-    question: "Bagaimana cara isi credits sekarang?",
+    question: "Bagaimana cara melakukan pembayaran?",
     answer:
-      "Untuk sementara isi credits masih manual. Scan QR code yang tersedia, lakukan pembayaran, lalu kirim bukti transfer ke admin agar credits segera ditambahkan ke akun Anda.",
+      "Kami menggunakan payment gateway Mayar.id. Anda bisa membayar menggunakan QRIS, GoPay, OVO, Dana, ShopeePay, Transfer Bank (Virtual Account), hingga Kartu Kredit secara otomatis.",
   },
   {
-    question: "Apakah sudah terhubung payment gateway?",
+    question: "Apakah Credits saya langsung bertambah?",
     answer:
-      "Belum. Halaman ini sengaja dibuat transparan sesuai kondisi saat ini. Begitu payment gateway aktif, alur ini bisa diganti tanpa mengubah pengalaman utama pengguna.",
+      "Ya! Begitu pembayaran Anda berhasil, sistem akan mendeteksi secara otomatis dan menambahkan saldo Credits ke akun Anda dalam hitungan detik.",
   },
   {
-    question: "Bagaimana jika credit awal saya habis?",
+    question: "Apakah data pembayaran saya aman?",
     answer:
-      "Member baru otomatis mendapatkan 3 Credits di awal secara gratis. Jika habis, Anda bisa melakukan Top Up paket Credits (Starter/Basic/Pro) untuk terus menggunakan fitur Chef AI dan Request Resep. Credits tidak akan hangus (selamanya).",
+      "Aman. Semua transaksi diproses melalui Mayar.id yang sudah terverifikasi dan berizin resmi. Dapur Ardya tidak pernah menyimpan data pembayaran Anda.",
   },
   {
-    question: "Setelah bayar, kapan Credits saya bertambah?",
+    question: "Bagaimana jika terjadi kendala saat bayar?",
     answer:
-      "Begitu admin memverifikasi bukti pembayaran Anda, admin akan mengupdate jumlah Credits di akun Anda secara manual. Proses ini biasanya memakan waktu singkat setelah konfirmasi via WhatsApp.",
+      "Jika saldo belum bertambah setelah pembayaran berhasil, silakan hubungi admin melalui WhatsApp dengan melampirkan bukti pembayaran yang masuk ke email Anda.",
   },
 ];
 
 export default async function MemberUpgradePage() {
   const session = await getMemberSession();
-  const payerName = session?.name?.trim() || "saya";
-  const whatsappMessage = `Halo admin Dapur Ardya, saya ${payerName} sudah melakukan pembayaran untuk upgrade akun dengan bukti sebagai berikut.`;
-  const whatsappHref = `https://wa.me/62895326880773?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="relative overflow-hidden">
@@ -123,175 +69,59 @@ export default async function MemberUpgradePage() {
             Beli kredit sekali, gunakan kapan saja. Tanpa biaya langganan, tanpa biaya bulanan.
             <span className="block text-primary font-semibold">Kredit tidak pernah hangus.</span>
           </p>
-
         </section>
 
-        <section className="mt-12 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="grid gap-5 md:grid-cols-2">
-            {plans.map((plan) => (
-              <article
-                key={plan.name}
-                className={`relative flex h-full flex-col rounded-[2rem] border bg-card p-6 shadow-[0_18px_50px_-28px_rgba(48,20,40,0.4)] ${
-                  plan.featured
-                    ? "border-primary/35 ring-2 ring-primary/15"
-                    : "border-border/80"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                      {plan.featured ? <Crown className="size-3.5" /> : <Star className="size-3.5" />}
-                      {plan.badge}
+        {/* Top Up Plans Component */}
+        <section className="mt-12">
+          <TopUpPlans memberEmail={session?.email} />
+        </section>
+
+        <section className="mt-20 grid gap-10 lg:grid-cols-2 lg:items-center">
+           <div className="space-y-6">
+              <h2 className="text-3xl font-black tracking-tight text-foreground">Kenapa memakai Credits?</h2>
+              <div className="space-y-4">
+                 {valuePoints.map((point) => (
+                    <div key={point} className="flex gap-4 items-start p-4 rounded-2xl bg-card border border-border/60">
+                       <div className="p-2 rounded-xl bg-primary/10 text-primary">
+                          <Check className="size-5" />
+                       </div>
+                       <p className="text-muted-foreground leading-relaxed">{point}</p>
                     </div>
-                    <h2 className="mt-4 text-2xl font-bold text-foreground">{plan.name}</h2>
-                    <p className="mt-2 text-sm leading-6 text-muted-foreground">{plan.description}</p>
-                  </div>
-                </div>
-
-                <div className="mt-8 border-y border-border/70 py-6">
-                  <div className="flex items-end gap-2">
-                    <span className="text-4xl font-black tracking-tight text-foreground">{plan.price}</span>
-                    <span className="pb-1 text-sm text-muted-foreground">{plan.cadence}</span>
-                  </div>
-                </div>
-
-                <ul className="mt-6 space-y-3 text-sm text-muted-foreground">
-                  {plan.highlights.map((highlight) => (
-                    <li key={highlight} className="flex items-start gap-3">
-                      <span className="mt-0.5 rounded-full bg-primary/10 p-1 text-primary">
-                        <Check className="size-3.5" />
-                      </span>
-                      <span>{highlight}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8">
-                  {plan.ctaHref.startsWith("#") ? (
-                    <a href={plan.ctaHref} className="block">
-                      <Button
-                        variant={plan.featured ? "default" : "outline"}
-                        className={`h-12 w-full rounded-2xl text-sm font-bold ${
-                          plan.featured ? "shadow-lg" : ""
-                        }`}
-                      >
-                        {plan.ctaLabel}
-                      </Button>
-                    </a>
-                  ) : (
-                    <Link href={plan.ctaHref} className="block">
-                      <Button
-                        variant={plan.featured ? "default" : "outline"}
-                        className={`h-12 w-full rounded-2xl text-sm font-bold ${
-                          plan.featured ? "shadow-lg" : ""
-                        }`}
-                      >
-                        {plan.ctaLabel}
-                      </Button>
-                    </Link>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <aside
-            id="pembayaran"
-            className="rounded-[2rem] border border-primary/25 bg-card p-6 shadow-[0_18px_50px_-28px_rgba(48,20,40,0.45)]"
-          >
-            <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-              <QrCode className="size-3.5" />
-              Pembayaran Manual
-            </div>
-            <h2 className="mt-4 text-2xl font-bold text-foreground">Scan QR untuk Top Up Credits</h2>
-            <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Karena belum memakai payment gateway, pembayaran masih dilakukan manual. Setelah transfer, kirim
-              bukti pembayaran agar saldo credits bisa segera kami tambahkan ke akun Anda.
-            </p>
-
-            <div className="mt-6 rounded-[1.5rem] border border-primary/15 bg-background p-4">
-              <div
-                id="foto-qr"
-                className="scroll-mt-24 overflow-hidden rounded-[1.25rem] border border-border bg-white p-3"
-              >
-                <Image
-                  src="/qrcode.jpeg"
-                  alt="QR code pembayaran upgrade Chef AI Dapur Ardya"
-                  width={800}
-                  height={800}
-                  className="h-auto w-full rounded-2xl object-cover"
-                  priority
-                />
+                 ))}
               </div>
-              <div className="mt-4 rounded-2xl bg-primary/5 p-4 text-sm text-muted-foreground">
-                <p className="font-semibold text-foreground">Daftar Harga Paket Credits</p>
-                <ul className="mt-1 space-y-1">
-                  <li>• Starter (10 Credits): Rp 15.000</li>
-                  <li>• Basic (25 Credits): Rp 25.000</li>
-                  <li>• Pro (50 Credits): Rp 40.000</li>
-                </ul>
+           </div>
+           
+           <div className="rounded-[2.5rem] border-2 border-primary/20 bg-background/50 p-6 sm:p-10 backdrop-blur-sm">
+              <div className="flex items-center gap-4 mb-6">
+                 <div className="p-3 rounded-2xl bg-primary text-white shadow-lg shadow-primary/30">
+                    <ShieldCheck className="size-6" />
+                 </div>
+                 <div>
+                    <h3 className="text-xl font-bold">Pembayaran Aman</h3>
+                    <p className="text-sm text-muted-foreground">Powered by Mayar.id</p>
+                 </div>
               </div>
-            </div>
-
-            <div className="mt-6 space-y-3">
-              <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background px-4 py-3">
-                <Clock3 className="mt-0.5 size-4 text-primary" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Konfirmasi setelah bayar</p>
-                  <p className="text-sm text-muted-foreground">
-                    Simpan bukti pembayaran, lalu kirimkan ke admin agar saldo credits Anda segera diupdate secara manual.
-                  </p>
-                </div>
+              <p className="text-muted-foreground mb-8">
+                Nikmati kemudahan top-up otomatis. Setelah konfirmasi pembayaran, Anda bisa langsung kembali mengeksplorasi resep bersama Chef AI.
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="p-4 rounded-2xl border bg-white/5 text-center">
+                    <p className="text-2xl font-black text-primary">100%</p>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Otomatis</p>
+                 </div>
+                 <div className="p-4 rounded-2xl border bg-white/5 text-center">
+                    <p className="text-2xl font-black text-primary">24/7</p>
+                    <p className="text-[10px] uppercase font-bold text-muted-foreground">Siap Pakai</p>
+                 </div>
               </div>
-              <div className="flex items-start gap-3 rounded-2xl border border-border/70 bg-background px-4 py-3">
-                <ShieldCheck className="mt-0.5 size-4 text-primary" />
-                <div>
-                  <p className="text-sm font-semibold text-foreground">Transparan dan sementara</p>
-                  <p className="text-sm text-muted-foreground">
-                    Begitu sistem payment gateway siap, alur ini akan kami upgrade tanpa mengubah pengalaman utama.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-[1.5rem] border border-dashed border-primary/25 bg-primary/5 p-4">
-              <div className="flex items-start gap-3">
-                <MessageCircleMore className="mt-0.5 size-4 text-primary" />
-                <div className="space-y-1">
-                  <p className="text-sm font-semibold text-foreground">Butuh bantuan verifikasi?</p>
-                  <p className="text-sm text-muted-foreground">
-                    Setelah bayar, hubungi admin Dapur Ardya melalui channel yang biasa dipakai tim untuk aktivasi.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 rounded-2xl border border-primary/15 bg-background px-4 py-3 text-sm text-muted-foreground">
-                <p className="font-semibold text-foreground">Kalimat pembuka yang disarankan</p>
-                <p className="mt-2 leading-6">
-                  {whatsappMessage}
-                </p>
-              </div>
-              <a
-                href={whatsappHref}
-                target="_blank"
-                rel="noreferrer"
-                className="mt-4 block"
-              >
-                <Button className="h-12 w-full rounded-2xl bg-[#25D366] text-sm font-bold text-white shadow-lg hover:bg-[#1fb45a]">
-                  <MessageCircleMore className="mr-2 size-4" />
-                  Konfirmasi via WhatsApp
-                  <ExternalLink className="ml-2 size-4" />
-                </Button>
-              </a>
-            </div>
-          </aside>
+           </div>
         </section>
 
-        <section className="mt-14 rounded-[2rem] border border-primary/15 bg-card px-5 py-6 shadow-sm sm:px-8 sm:py-8">
+        <section className="mt-20 rounded-[2rem] border border-primary/15 bg-card px-5 py-6 shadow-sm sm:px-8 sm:py-8">
           <div className="max-w-2xl">
             <h2 className="text-3xl font-black tracking-tight text-foreground">Pertanyaan yang sering muncul</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Kami buat bagian ini supaya alur upgrade tetap terasa jelas walaupun sistem pembayaran otomatis belum
-              diaktifkan.
+              Semua yang perlu kamu ketahui tentang sistem credits dan pembayaran otomatis Mayar.
             </p>
           </div>
 
@@ -299,7 +129,7 @@ export default async function MemberUpgradePage() {
             {faqs.map((faq) => (
               <details
                 key={faq.question}
-                className="group rounded-2xl border border-border/80 bg-background px-5 py-4 shadow-sm"
+                className="group rounded-2xl border border-border/80 bg-background px-5 py-4 shadow-sm transition-all open:ring-2 open:ring-primary/20"
               >
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-semibold text-foreground">
                   {faq.question}

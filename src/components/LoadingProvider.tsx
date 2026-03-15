@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+import { ChefHat, UtensilsCrossed, Soup, Loader2 } from "lucide-react";
 
 interface LoadingContextType {
   setIsLoading: (loading: boolean) => void;
@@ -25,13 +25,38 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
     <LoadingContext.Provider value={{ setIsLoading }}>
       {children}
       {isLoading && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/60 backdrop-blur-[2px] animate-in fade-in duration-200">
-          <div className="flex flex-col items-center gap-3 p-6 rounded-3xl bg-card border-2 shadow-2xl scale-110 sm:scale-125 transition-transform">
-            <div className="relative">
-               <div className="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-               <Loader2 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-5 text-primary" />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="flex flex-col items-center gap-6">
+            <div className="relative flex items-center justify-center">
+              {/* Outer Glow */}
+              <div className="absolute inset-0 size-24 bg-primary/20 rounded-full blur-2xl animate-pulse" />
+              
+              {/* Spinning Ring */}
+              <div className="size-20 rounded-full border-4 border-dashed border-primary/30 animate-[spin_4s_linear_infinite]" />
+              
+              {/* Content Icons */}
+              <div className="absolute flex items-center justify-center">
+                <div className="relative size-12 flex items-center justify-center">
+                   <div className="absolute inset-0 animate-[bounce_2s_ease-in-out_infinite]">
+                      <ChefHat className="size-12 text-primary" />
+                   </div>
+                   <UtensilsCrossed className="absolute -right-8 -top-2 size-6 text-primary/40 animate-[pulse_1.5s_ease-in-out_infinite]" />
+                   <Soup className="absolute -left-8 -bottom-2 size-6 text-primary/40 animate-[pulse_1.5s_ease-in-out_infinite_delay-300ms]" />
+                </div>
+              </div>
             </div>
-            <p className="text-sm font-bold text-foreground animate-pulse">Memproses...</p>
+
+            <div className="text-center space-y-2">
+              <p className="text-xl font-black tracking-tight text-foreground">Chef AI sedang beraksi</p>
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-sm text-muted-foreground">Menyiapkan inspirasi dapur...</p>
+                <div className="flex gap-1">
+                  <div className="size-1.5 rounded-full bg-primary animate-bounce" />
+                  <div className="size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
+                  <div className="size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

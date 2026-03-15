@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (!usageStatus.canUseAI) {
       return NextResponse.json(
         {
-          error: "Kamu tidak memiliki Credit yang cukup untuk menggunakan Chef AI. Silakan kumpulkan Credit atau beli paket premium.",
+          error: "Kamu tidak memiliki Credit yang cukup untuk menggunakan Chef AI. Silakan kumpulkan Credit atau Top Up paket Credits.",
           code: "AI_QUOTA_EXCEEDED",
           aiStatus: usageStatus,
         },

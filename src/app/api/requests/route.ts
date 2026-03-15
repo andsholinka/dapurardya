@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     if (!requestStatus.canRequest) {
       return NextResponse.json(
         {
-          error: "Kamu tidak memiliki Credit yang cukup untuk merequest resep. Silakan kumpulkan Credit atau beli paket premium.",
+          error: "Kamu tidak memiliki Credit yang cukup untuk merequest resep. Silakan kumpulkan Credit atau Top Up paket Credits.",
           code: "REQUEST_QUOTA_EXCEEDED",
           requestStatus,
         },

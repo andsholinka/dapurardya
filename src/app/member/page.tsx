@@ -31,7 +31,7 @@ export default async function MemberPage() {
   const db = await getDb();
   const [requests, requestStatus] = await Promise.all([
     getMemberRequests(session),
-    getMemberRecipeRequestStatus(db, session.id, session.aiPlan),
+    getMemberRecipeRequestStatus(db, session.id),
   ]);
   return <MemberDashboard session={session} requests={requests} requestStatus={requestStatus} />;
 }

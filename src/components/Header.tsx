@@ -18,7 +18,7 @@ export async function Header() {
         </Link>
         <nav className="flex items-center gap-2">
           {isAdmin ? (
-            <HeaderMenu member={{ id: "admin", name: "Admin", email: "" }} isAdmin />
+            <HeaderMenu member={{ id: "admin", name: "Admin", email: "", aiPlan: "free" }} isAdmin />
           ) : (
             <HeaderMenu member={member} />
           )}

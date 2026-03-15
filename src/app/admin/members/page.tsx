@@ -1,5 +1,5 @@
 import { getDb } from "@/lib/mongodb";
-import { AdminMemberPlans } from "@/components/AdminMemberPlans";
+import { AdminMemberPlans, type AdminMemberSummary } from "@/components/AdminMemberPlans";
 import type { MemberDoc } from "@/types/member";
 
 async function getLatestMembers() {
@@ -16,9 +16,9 @@ async function getLatestMembers() {
       id: member._id?.toString() || "",
       name: member.name || member.email,
       email: member.email,
-      aiPlan: member.aiPlan === "premium" ? "premium" : "free",
+      aiPlan: (member.aiPlan === "premium" ? "premium" : "free") as "free" | "premium",
       createdAt: member.createdAt instanceof Date ? member.createdAt.toISOString() : null,
-    }));
+    })) as AdminMemberSummary[];
   } catch {
     return [];
   }

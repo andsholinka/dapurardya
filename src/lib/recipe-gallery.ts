@@ -8,7 +8,8 @@ const MAX_OFFSET = 100;
 export function normalizeRecipeImageAsset(
   image: Partial<RecipeImageAsset> | null | undefined
 ): RecipeImageAsset | null {
-  const url = image?.url?.trim();
+  if (!image) return null;
+  const url = image.url?.trim();
   if (!url) return null;
 
   return {

@@ -12,7 +12,7 @@ const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/200
 const blurDataURL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' fill='%23fce7f3'/%3E%3C/svg%3E";
 
 interface RecipeCardProps {
-  recipe: Recipe & { _id?: string };
+  recipe: Partial<Recipe> & { _id?: string; title: string; slug: string; description: string; category: string };
   className?: string;
   isMember?: boolean;
 }

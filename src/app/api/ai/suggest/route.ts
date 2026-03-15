@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Ambil resep yang dipublikasi
-    const recipes = await db.collection<RecipeDoc>("recipes")
+    const recipes = (await db.collection<RecipeDoc>("recipes")
       .find({ published: true })
       .project({ title: 1, slug: 1, ingredients: 1, image: 1, category: 1, servings: 1 })
-      .toArray();
+      .toArray()) as any[];
 
     if (recipes.length === 0) {
       return NextResponse.json({ suggestions: [] });

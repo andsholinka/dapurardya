@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Crown, Loader2, ShieldCheck, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface AdminMemberSummary {
+export interface AdminMemberSummary {
   id: string;
   name: string;
   email: string;

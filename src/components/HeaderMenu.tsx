@@ -7,7 +7,8 @@ import { signOut } from "next-auth/react";
 import type { MemberSession } from "@/lib/auth";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
-import { ChevronDown, User } from "lucide-react";
+import { ChevronDown, User, Bell, BellOff, Loader2 } from "lucide-react";
+import { subscribeUser, unsubscribeUser, getSubscription } from "@/lib/notifications";
 
 export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession | null; isAdmin?: boolean }) {
   const router = useRouter();
@@ -21,6 +22,50 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  // Notification State
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission>("default");
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const [isNotifSupported, setIsNotifSupported] = useState(false);
+
+  useEffect(() => {
+    async function checkStatus() {
+      if (typeof window !== "undefined") {
+        const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+        setIsNotifSupported(supported);
+        if (supported) {
+          setNotifPermission(Notification.permission);
+          const sub = await getSubscription();
+          setIsSubscribed(!!sub);
+        }
+      }
+    }
+    checkStatus();
+  }, []);
+
+  async function toggleNotification() {
+    setNotifLoading(true);
+    try {
+      if (isSubscribed) {
+        setIsSubscribed(false); // Optimistic update
+        await unsubscribeUser();
+      } else {
+        const granted = await subscribeUser();
+        if (granted) {
+          setNotifPermission("granted");
+          setIsSubscribed(true);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      // Sync back with actual status on error
+      const sub = await getSubscription();
+      setIsSubscribed(!!sub);
+    } finally {
+      setNotifLoading(false);
+    }
+  }
 
   async function logout() {
     if (isAdmin) {
@@ -80,6 +125,28 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
             <Link href="/member/auth?tab=register" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t" onClick={() => setOpen(false)}>
               Daftar
             </Link>
+            {isNotifSupported && (
+              <button
+                onClick={toggleNotification}
+                disabled={notifLoading}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t flex items-center justify-between group"
+              >
+                <span className="flex items-center gap-2">
+                  {isSubscribed ? (
+                    <Bell className="size-3.5 text-primary" />
+                  ) : (
+                    <BellOff className="size-3.5 text-muted-foreground" />
+                  )}
+                  Notifikasi
+                </span>
+                <span className={cn(
+                  "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
+                  isSubscribed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                )}>
+                  {notifLoading ? <Loader2 className="size-3 animate-spin" /> : (isSubscribed ? "AKTIF" : "MATI")}
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -118,6 +185,30 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
               </button>
             </>
           )}
+
+          {isNotifSupported && (
+            <button
+              onClick={toggleNotification}
+              disabled={notifLoading}
+              className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t flex items-center justify-between group"
+            >
+              <span className="flex items-center gap-2">
+                {isSubscribed ? (
+                  <Bell className="size-3.5 text-primary" />
+                ) : (
+                  <BellOff className="size-3.5 text-muted-foreground" />
+                )}
+                Notifikasi
+              </span>
+              <span className={cn(
+                "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
+                isSubscribed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+              )}>
+                {notifLoading ? <Loader2 className="size-3 animate-spin" /> : (isSubscribed ? "AKTIF" : "MATI")}
+              </span>
+            </button>
+          )}
+
           <button onClick={logout} className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors border-t">
             Keluar
           </button>

@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export function RegisterSW() {
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
+      const register = () => {
         navigator.serviceWorker.register("/sw.js").then((reg) => {
           // Cek update Service Worker secara berkala
           reg.onupdatefound = () => {
@@ -15,7 +15,7 @@ export function RegisterSW() {
                 if (installingWorker.state === "installed") {
                   if (navigator.serviceWorker.controller) {
                     // Update ditemukan! Service worker baru siap.
-                    console.log("Update baru ditemukan. Melakukan reload...");
+                    console.log("[SW] Update baru ditemukan. Melakukan reload...");
                     window.location.reload();
                   }
                 }
@@ -23,7 +23,13 @@ export function RegisterSW() {
             }
           };
         }).catch(console.error);
-      });
+      };
+
+      if (document.readyState === "complete") {
+        register();
+      } else {
+        window.addEventListener("load", register);
+      }
 
       // Listener untuk mendeteksi ketika Service Worker baru mengambil alih
       let refreshing = false;
@@ -33,6 +39,10 @@ export function RegisterSW() {
           refreshing = true;
         }
       });
+      
+      return () => {
+        window.removeEventListener("load", register);
+      };
     }
   }, []);
 

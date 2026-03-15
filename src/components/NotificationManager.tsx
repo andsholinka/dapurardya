@@ -1,53 +1,44 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Bell, BellOff, Loader2 } from "lucide-react";
+import { Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "";
+import { subscribeUser, getSubscription } from "@/lib/notifications";
 
 export function NotificationManager() {
-  const [permission, setPermission] = useState<NotificationPermission>("default");
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
+  const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-      setIsSupported(supported);
-      if (supported) {
-        setPermission(Notification.permission);
+    async function checkStatus() {
+      if (typeof window !== "undefined") {
+        const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+        setIsSupported(supported);
+        if (supported) {
+          try {
+            // Race condition check or hang check
+            const subPromise = getSubscription();
+            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+            const sub = await Promise.race([subPromise, timeoutPromise]) as any;
+            setIsSubscribed(!!sub);
+          } catch (e) {
+            console.warn("[NOTIF] Gagal mengecek status subscription (mungkin sedang loading):", e);
+            setIsSubscribed(false);
+          }
+        }
       }
+      setChecking(false);
     }
+    checkStatus();
   }, []);
 
-  async function subscribeUser() {
-    if (!VAPID_PUBLIC_KEY) {
-      console.error("VAPID Public Key is not set");
-      return;
-    }
-
+  async function handleSubscribe() {
     setLoading(true);
     try {
-      const registration = await navigator.serviceWorker.ready;
-      
-      // Request permission
-      const result = await Notification.requestPermission();
-      setPermission(result);
-
-      if (result === "granted") {
-        const subscription = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-        });
-
-        // Save to backend
-        await fetch("/api/notification/subscribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(subscription),
-        });
-      }
+      const granted = await subscribeUser();
+      if (granted) setIsSubscribed(true);
     } catch (error) {
       console.error("Failed to subscribe:", error);
     } finally {
@@ -55,42 +46,24 @@ export function NotificationManager() {
     }
   }
 
-  if (!isSupported) return null;
+  // Sembunyikan jika tidak didukung, sedang mengecek, atau SUDAH ter-subscribe
+  if (!isSupported || checking || isSubscribed) return null;
 
   return (
     <div className="fixed bottom-4 left-4 z-50">
-      {permission !== "granted" ? (
-        <Button
-          onClick={subscribeUser}
-          disabled={loading}
-          variant="outline"
-          className="rounded-full shadow-lg bg-background group"
-        >
-          {loading ? (
-            <Loader2 className="size-4 animate-spin mr-2" />
-          ) : (
-            <Bell className="size-4 mr-2 group-hover:animate-bounce" />
-          )}
-          Aktifkan Notifikasi Update
-        </Button>
-      ) : (
-        <div className="bg-background/80 backdrop-blur-sm border rounded-full p-2 text-muted-foreground flex items-center gap-2 px-4 text-xs font-medium shadow-sm">
-          <Bell className="size-3 text-primary" />
-          Notifikasi Aktif
-        </div>
-      )}
+      <Button
+        onClick={handleSubscribe}
+        disabled={loading}
+        variant="outline"
+        className="rounded-full shadow-lg bg-background group border-2"
+      >
+        {loading ? (
+          <Loader2 className="size-4 animate-spin mr-2" />
+        ) : (
+          <Bell className="size-4 mr-2 group-hover:animate-bounce" />
+        )}
+        Aktifkan Notifikasi Update
+      </Button>
     </div>
   );
-}
-
-// Utility to convert VAPID key
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
 }

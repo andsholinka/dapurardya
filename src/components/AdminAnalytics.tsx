@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -30,12 +31,14 @@ export function AdminAnalytics({ data }: { data: AnalyticsData }) {
       value: data.totalMembers,
       icon: Users,
       desc: "Member terdaftar",
+      href: "/admin/members",
     },
     {
       label: "Total Request",
       value: data.totalRequests,
       icon: ClipboardList,
       desc: "Semua request masuk",
+      href: "/admin/requests",
     },
     {
       label: "Menunggu",
@@ -49,20 +52,35 @@ export function AdminAnalytics({ data }: { data: AnalyticsData }) {
     <div className="space-y-6 mb-8">
       {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {stats.map((s) => (
-          <Card key={s.label} className="rounded-2xl border-2">
-            <CardContent className="pt-5 pb-4">
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-sm text-muted-foreground">{s.label}</p>
-                <div className="p-1.5 rounded-lg bg-primary/10">
-                  <s.icon className="size-4 text-primary" />
+        {stats.map((s) => {
+          const card = (
+            <Card
+              key={s.label}
+              className={`rounded-2xl border-2 ${s.href ? "transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md" : ""}`}
+            >
+              <CardContent className="pt-5 pb-4">
+                <div className="flex items-start justify-between mb-3">
+                  <p className="text-sm text-muted-foreground">{s.label}</p>
+                  <div className="p-1.5 rounded-lg bg-primary/10">
+                    <s.icon className="size-4 text-primary" />
+                  </div>
                 </div>
-              </div>
-              <p className="text-3xl font-bold tracking-tight">{s.value}</p>
-              <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
-            </CardContent>
-          </Card>
-        ))}
+                <p className="text-3xl font-bold tracking-tight">{s.value}</p>
+                <p className="text-xs text-muted-foreground mt-1">{s.desc}</p>
+              </CardContent>
+            </Card>
+          );
+
+          if (!s.href) {
+            return card;
+          }
+
+          return (
+            <Link key={s.label} href={s.href} className="block focus:outline-none">
+              {card}
+            </Link>
+          );
+        })}
       </div>
 
       {/* Bar Chart */}

@@ -1,7 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { buttonVariants } from "@/lib/button-variants";
-import { cn } from "@/lib/utils";
 import { getAdminSession, getMemberSession } from "@/lib/auth";
 import { HeaderMenu } from "./HeaderMenu";
 
@@ -15,7 +13,7 @@ export async function Header() {
           href="/"
           className="flex items-center gap-1.5 sm:gap-2 font-bold text-base sm:text-lg text-foreground hover:text-primary transition-colors shrink-0 whitespace-nowrap"
         >
-          <Image src="/icon-192.png" alt="Dapur Ardya" width={28} height={28} className="rounded-lg sm:w-[32px] sm:h-[32px]" quality={100} />
+          <Image src="/icon-192.png" alt="Dapur Ardya" width={28} height={28} className="rounded-lg sm:w-[32px] sm:h-[32px]" />
           Dapur Ardya
         </Link>
         <nav className="flex items-center gap-2">

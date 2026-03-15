@@ -26,10 +26,13 @@ export async function POST(request: NextRequest) {
 
     const result = await cloudinary.uploader.upload(dataUri, {
       folder: "dapurardya",
-      transformation: [{ width: 800, height: 600, crop: "limit", quality: "auto" }],
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({
+      url: result.secure_url,
+      width: result.width,
+      height: result.height,
+    });
   } catch (e) {
     console.error("[UPLOAD] Error:", e);
     return NextResponse.json({ error: "Gagal upload gambar" }, { status: 500 });

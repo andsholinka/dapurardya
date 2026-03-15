@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { getAdminSession } from "@/lib/auth";
 import { slugify } from "@/lib/slug";
-import type { Recipe, RecipeDoc, RecipeInput } from "@/types/recipe";
+import { getLegacyRecipeImagesFromGallery, normalizeRecipeGallery } from "@/lib/recipe-gallery";
+import type { RecipeDoc, RecipeInput } from "@/types/recipe";
 import { ObjectId } from "mongodb";
 
 const COLLECTION = "recipes";
@@ -47,7 +48,7 @@ export async function PUT(
     }
     const { id } = await params;
     const body = (await request.json()) as RecipeInput;
-    const { title, description, ingredients, steps, category, image, prepTimeMinutes, cookTimeMinutes, servings, published, memberOnly, tags } = body;
+    const { title, description, ingredients, steps, category, image, images, gallery, prepTimeMinutes, cookTimeMinutes, servings, published, memberOnly, tags } = body;
     if (!title?.trim() || !description?.trim() || !Array.isArray(ingredients) || !Array.isArray(steps) || !category?.trim()) {
       return NextResponse.json(
         { error: "Judul, deskripsi, bahan, langkah, dan kategori wajib diisi" },
@@ -58,6 +59,8 @@ export async function PUT(
     const col = db.collection<RecipeDoc>(COLLECTION);
     const oid = new ObjectId(id);
     const slug = slugify(title);
+    const normalizedGallery = normalizeRecipeGallery(gallery, images, image);
+    const normalizedImages = getLegacyRecipeImagesFromGallery(normalizedGallery);
     const existingOther = await col.findOne({ slug, _id: { $ne: oid } });
     if (existingOther) {
       return NextResponse.json(
@@ -70,7 +73,9 @@ export async function PUT(
       title: title.trim(),
       slug,
       description: description.trim(),
-      image: image?.trim() || undefined,
+      image: normalizedImages[0],
+      images: normalizedImages,
+      gallery: normalizedGallery,
       ingredients: ingredients.filter(Boolean),
       steps: steps.filter(Boolean),
       category: category.trim(),

@@ -51,6 +51,7 @@ export interface MemberSession {
   id: string;
   name: string;
   email: string;
+  aiPlan: "free" | "premium";
 }
 
 export async function getMemberSession(): Promise<MemberSession | null> {
@@ -81,6 +82,7 @@ export async function getMemberSession(): Promise<MemberSession | null> {
         id: member._id.toString(),
         name: member.name || name || email,
         email: email,
+        aiPlan: member.aiPlan === "premium" ? "premium" : "free",
       };
     }
   } catch (e) {
@@ -91,6 +93,7 @@ export async function getMemberSession(): Promise<MemberSession | null> {
     id: email,
     name: name || email,
     email: email,
+    aiPlan: "free",
   };
 }
 

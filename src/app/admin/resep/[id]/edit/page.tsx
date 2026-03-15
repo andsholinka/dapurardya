@@ -44,6 +44,8 @@ export default async function EditRecipePage({ params }: PageProps) {
           title: recipe.title,
           description: recipe.description,
           image: recipe.image,
+          images: recipe.images,
+          gallery: recipe.gallery,
           ingredients: recipe.ingredients,
           steps: recipe.steps,
           category: recipe.category,

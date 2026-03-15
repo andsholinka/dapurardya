@@ -26,11 +26,17 @@ export async function POST(request: NextRequest) {
     const result = await col.insertOne({
       name: name.trim(),
       email: email.toLowerCase().trim(),
+      aiPlan: "free",
       passwordHash,
       createdAt: new Date(),
     } as MemberDoc);
 
-    await setMemberSession({ id: result.insertedId.toString(), name: name.trim(), email: email.toLowerCase().trim() });
+    await setMemberSession({
+      id: result.insertedId.toString(),
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      aiPlan: "free",
+    });
     revalidatePath("/member");
     return NextResponse.json({ success: true });
   } catch (e) {

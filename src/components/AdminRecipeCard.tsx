@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/lib/button-variants";
 import type { Recipe } from "@/types/recipe";
 import { cn } from "@/lib/utils";
+import { getPrimaryRecipeImageAsset } from "@/lib/recipe-gallery";
+import { getRecipeImageStyles } from "@/lib/recipe-images";
 import { Pencil, Trash2 } from "lucide-react";
 
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300' fill='%23fce7f3'%3E%3Crect width='400' height='300' fill='%23fce7f3'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23be185d' font-size='24' font-family='sans-serif'%3E🍳%3C/text%3E%3C/svg%3E";
@@ -19,7 +21,9 @@ interface AdminRecipeCardProps {
 
 export function AdminRecipeCard({ recipe, className }: AdminRecipeCardProps) {
   const router = useRouter();
-  const imgSrc = recipe.image || placeholderImage;
+  const primaryImage = getPrimaryRecipeImageAsset(recipe.gallery, recipe.images, recipe.image);
+  const imgSrc = primaryImage?.url || placeholderImage;
+  const imageStyle = getRecipeImageStyles(primaryImage);
   const isDataUrl = imgSrc.startsWith("data:");
 
   async function handleDelete() {
@@ -34,10 +38,10 @@ export function AdminRecipeCard({ recipe, className }: AdminRecipeCardProps) {
   }
 
   return (
-    <Card className={cn("overflow-hidden rounded-2xl border-2", className)}>
+    <Card className={cn("gap-0 overflow-hidden rounded-2xl border-2 py-0", className)}>
       <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
         {isDataUrl ? (
-          <img src={imgSrc} alt={recipe.title} className="object-cover w-full h-full" />
+          <img src={imgSrc} alt={recipe.title} className="object-cover w-full h-full" style={imageStyle} />
         ) : (
           <Image
             src={imgSrc}
@@ -45,6 +49,7 @@ export function AdminRecipeCard({ recipe, className }: AdminRecipeCardProps) {
             fill
             className="object-cover"
             sizes="(max-width: 640px) 100vw, 33vw"
+            style={imageStyle}
           />
         )}
         <span className="absolute top-2 left-2 rounded-full bg-primary/90 text-primary-foreground text-xs font-medium px-2 py-0.5">

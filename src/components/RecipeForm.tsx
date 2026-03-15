@@ -2,14 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import type { RecipeInput } from "@/types/recipe";
-import { Plus, Trash2, ImagePlus, X } from "lucide-react";
+import { RecipeImageEditorCard } from "@/components/RecipeImageEditorCard";
+import {
+  getLegacyRecipeImagesFromGallery,
+  normalizeRecipeGallery,
+} from "@/lib/recipe-gallery";
+import type { RecipeImageAsset, RecipeInput } from "@/types/recipe";
+import { Trash2, ImagePlus, X } from "lucide-react";
 
 interface RecipeFormProps {
   initial?: Partial<RecipeInput> & { _id?: string };
@@ -20,6 +24,8 @@ const defaultRecipe: RecipeInput = {
   title: "",
   description: "",
   image: "",
+  images: [],
+  gallery: [],
   ingredients: [""],
   steps: [""],
   category: "Makanan",
@@ -39,6 +45,9 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
   const [form, setForm] = useState<RecipeInput>(() => ({
     ...defaultRecipe,
     ...initial,
+    image: initial?.image ?? "",
+    images: initial?.images ?? [],
+    gallery: normalizeRecipeGallery(initial?.gallery, initial?.images, initial?.image),
     ingredients: initial?.ingredients?.length ? initial.ingredients : [""],
     steps: initial?.steps?.length ? initial.steps : [""],
     tags: initial?.tags ?? [],
@@ -46,22 +55,98 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
   const [tagInput, setTagInput] = useState("");
 
   async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
     setUploading(true);
     setError("");
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: fd });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal upload");
-      setForm((f) => ({ ...f, image: data.url }));
+      const uploadedUrls = await Promise.all(
+        files.map(async (file) => {
+          const fd = new FormData();
+          fd.append("file", file);
+          const res = await fetch("/api/upload", { method: "POST", body: fd });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || "Gagal upload");
+          return {
+            url: data.url as string,
+            width: typeof data.width === "number" ? data.width : undefined,
+            height: typeof data.height === "number" ? data.height : undefined,
+          };
+        })
+      );
+
+      setForm((f) => {
+        const gallery = [
+          ...(f.gallery ?? []),
+          ...uploadedUrls.map((asset) => ({
+            url: asset.url,
+            zoom: 1,
+            offsetX: 0,
+            offsetY: 0,
+            width: asset.width,
+            height: asset.height,
+          })),
+        ];
+        return {
+          ...f,
+          image: gallery[0]?.url ?? "",
+          images: getLegacyRecipeImagesFromGallery(gallery),
+          gallery,
+        };
+      });
     } catch (err) {
       setError((err as Error).message);
     } finally {
       setUploading(false);
+      e.target.value = "";
     }
+  }
+
+  function removeImage(index: number) {
+    setForm((f) => {
+      const gallery = (f.gallery ?? []).filter((_, currentIndex) => currentIndex !== index);
+      return {
+        ...f,
+        image: gallery[0]?.url ?? "",
+        images: getLegacyRecipeImagesFromGallery(gallery),
+        gallery,
+      };
+    });
+  }
+
+  function setCoverImage(index: number) {
+    setForm((f) => {
+      const gallery = [...(f.gallery ?? [])];
+      const selected = gallery[index];
+      if (!selected) return f;
+
+      gallery.splice(index, 1);
+      gallery.unshift(selected);
+
+      return {
+        ...f,
+        image: gallery[0]?.url ?? "",
+        images: getLegacyRecipeImagesFromGallery(gallery),
+        gallery,
+      };
+    });
+  }
+
+  function updateGalleryImage(index: number, patch: Partial<RecipeImageAsset>) {
+    setForm((f) => {
+      const gallery = [...(f.gallery ?? [])];
+      const current = gallery[index];
+      if (!current) return f;
+
+      gallery[index] = { ...current, ...patch };
+
+      return {
+        ...f,
+        image: gallery[0]?.url ?? "",
+        images: getLegacyRecipeImagesFromGallery(gallery),
+        gallery,
+      };
+    });
   }
 
   function addIngredient() {
@@ -119,6 +204,9 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
     setSaving(true);
     const payload = {
       ...form,
+      image: form.gallery?.[0]?.url ?? "",
+      images: getLegacyRecipeImagesFromGallery(form.gallery),
+      gallery: form.gallery ?? [],
       ingredients: form.ingredients.filter(Boolean),
       steps: form.steps.filter(Boolean),
     };
@@ -236,28 +324,48 @@ export function RecipeForm({ initial, mode }: RecipeFormProps) {
             </div>
           </div>
           <div>
-            <Label>Gambar (opsional)</Label>
+            <Label>Foto Resep (opsional)</Label>
             <div className="mt-1 space-y-2">
-              {form.image ? (
-                <div className="relative w-full h-48 rounded-xl overflow-hidden border-2 shadow-sm">
-                  <Image src={form.image} alt="Preview" fill className="object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setForm((f) => ({ ...f, image: "" }))}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 hover:bg-black/80 shadow-lg"
-                  >
-                    <X className="size-4" />
-                  </button>
+              {(form.gallery?.length ?? 0) > 0 ? (
+                <div className="space-y-4">
+                  {(form.gallery ?? []).map((image, index) => (
+                    <RecipeImageEditorCard
+                      key={`${image.url}-${index}`}
+                      image={image}
+                      index={index}
+                      isCover={index === 0}
+                      onSetCover={() => setCoverImage(index)}
+                      onRemove={() => removeImage(index)}
+                      onChange={(patch) => updateGalleryImage(index, patch)}
+                    />
+                  ))}
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors bg-muted/20">
                   <ImagePlus className="size-6 text-muted-foreground mb-1" />
                   <span className="text-sm text-muted-foreground">
-                    {uploading ? "Mengupload..." : "Klik untuk pilih gambar"}
+                    {uploading ? "Mengupload..." : "Klik untuk pilih satu atau beberapa foto"}
                   </span>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageChange}
+                    disabled={uploading}
+                  />
+                </label>
+              )}
+              {(form.images?.length ?? 0) > 0 && (
+                <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-xl cursor-pointer hover:bg-muted/50 transition-colors bg-muted/20">
+                  <ImagePlus className="size-5 text-muted-foreground mb-1" />
+                  <span className="text-sm text-muted-foreground">
+                    {uploading ? "Mengupload..." : "Tambah foto lagi"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
                     className="hidden"
                     onChange={handleImageChange}
                     disabled={uploading}

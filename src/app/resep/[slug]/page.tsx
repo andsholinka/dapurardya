@@ -1,23 +1,23 @@
 import { notFound, redirect } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getDb } from "@/lib/mongodb";
 import { getMemberSession, getAdminSession } from "@/lib/auth";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { buttonVariants } from "@/lib/button-variants";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ShareButton } from "@/components/ShareButton";
 import { BookmarkButton } from "@/components/BookmarkButton";
 import { RecipeCard } from "@/components/RecipeCard";
+import { RecipeImageCarousel } from "@/components/RecipeImageCarousel";
 import { RatingStars } from "@/components/RatingStars";
 import { CookingInstructions } from "@/components/CookingInstructions";
+import { getPrimaryRecipeImageAsset, normalizeRecipeGallery } from "@/lib/recipe-gallery";
 
 const COLLECTION = "recipes";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
-const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='450' viewBox='0 0 800 450' fill='%23fce7f3'%3E%3Crect width='800' height='450' fill='%23fce7f3'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23be185d' font-size='64' font-family='sans-serif'%3E🍳%3C/text%3E%3C/svg%3E";
-const blurDataURL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='45' viewBox='0 0 80 45'%3E%3Crect width='80' height='45' fill='%23fce7f3'/%3E%3C/svg%3E";
+const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='800' viewBox='0 0 800 800' fill='%23fce7f3'%3E%3Crect width='800' height='800' fill='%23fce7f3'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' fill='%23be185d' font-size='64' font-family='sans-serif'%3E🍳%3C/text%3E%3C/svg%3E";
+const blurDataURL = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23fce7f3'/%3E%3C/svg%3E";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -31,7 +31,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     if (!doc) return {};
     const title = `${doc.title} – Dapur Ardya`;
     const description = doc.description;
-    const image = doc.image && !doc.image.startsWith("data:") ? doc.image : `${BASE_URL}/icon-512.png`;
+    const primaryImage = getPrimaryRecipeImageAsset(doc.gallery, doc.images, doc.image);
+    const image = primaryImage?.url && !primaryImage.url.startsWith("data:") ? primaryImage.url : `${BASE_URL}/icon-512.png`;
     const url = `${BASE_URL}/resep/${slug}`;
     return {
       title,
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description,
         url,
         siteName: "Dapur Ardya",
-        images: [{ url: image, width: 800, height: 600, alt: doc.title }],
+        images: [{ url: image, width: 800, height: 800, alt: doc.title }],
         type: "article",
       },
       twitter: {
@@ -106,8 +107,7 @@ export default async function RecipeDetailPage({ params }: PageProps) {
     relatedRecipes = related.map((r) => ({ ...r, _id: r._id!.toString() })) as (Recipe & { _id: string })[];
   } catch { /* silent */ }
 
-  const imgSrc = recipe.image || placeholderImage;
-  const isDataUrl = imgSrc.startsWith("data:");
+  const recipeImages = normalizeRecipeGallery(recipe.gallery, recipe.images, recipe.image);
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 pb-12">
@@ -116,28 +116,14 @@ export default async function RecipeDetailPage({ params }: PageProps) {
       </Link>
 
       <article>
-        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted mb-6">
-          {isDataUrl ? (
-            <img
-              src={imgSrc}
-              alt={recipe.title}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <Image
-              src={imgSrc}
-              alt={recipe.title}
-              fill
-              className="object-cover"
-              priority
-              sizes="(max-width: 768px) 100vw, 672px"
-              placeholder="blur"
-              blurDataURL={blurDataURL}
-            />
-          )}
-          <span className="absolute top-3 left-3 rounded-full bg-primary/90 text-primary-foreground text-sm font-medium px-3 py-1">
-            {recipe.category}
-          </span>
+        <div className="mb-6">
+          <RecipeImageCarousel
+            images={recipeImages}
+            title={recipe.title}
+            placeholderImage={placeholderImage}
+            blurDataURL={blurDataURL}
+            categoryLabel={recipe.category}
+          />
         </div>
 
         <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">

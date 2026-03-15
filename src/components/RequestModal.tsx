@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { X } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Crown, Loader2, X } from "lucide-react";
+import type { MemberRecipeRequestStatus } from "@/lib/member-request";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,28 +19,74 @@ interface RequestModalProps {
 }
 
 export function RequestModal({ memberId, memberName, size, className }: RequestModalProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: memberName || "", recipeName: "", message: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [requestStatus, setRequestStatus] = useState<MemberRecipeRequestStatus | null>(null);
+  const [statusLoading, setStatusLoading] = useState(false);
 
-  function openModal() { setOpen(true); setSuccess(false); setError(""); }
-  function closeModal() { setOpen(false); setForm({ name: memberName || "", recipeName: "", message: "" }); setSuccess(false); }
+  async function loadRequestStatus() {
+    if (!memberId) return;
+    setStatusLoading(true);
+    try {
+      const res = await fetch("/api/member/request-status");
+      const data = await res.json();
+      if (res.ok) {
+        setRequestStatus(data.requestStatus ?? null);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setStatusLoading(false);
+    }
+  }
+
+  async function openModal() {
+    setOpen(true);
+    setSuccess(false);
+    setError("");
+    await loadRequestStatus();
+  }
+
+  function closeModal() {
+    setOpen(false);
+    setForm({ name: memberName || "", recipeName: "", message: "" });
+    setSuccess(false);
+    setError("");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (requestStatus && !requestStatus.canRequest) {
+      setError("Paket free hanya bisa request resep 1 kali per bulan. Upgrade untuk request tanpa batas.");
+      return;
+    }
+
     setLoading(true);
     setError("");
+
     try {
       const res = await fetch("/api/requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, memberId }),
+        body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Gagal mengirim");
+
+      if (!res.ok) {
+        if (data.requestStatus) {
+          setRequestStatus(data.requestStatus);
+        }
+        throw new Error(data.error || "Gagal mengirim");
+      }
+
+      setRequestStatus(data.requestStatus ?? null);
       setSuccess(true);
+      router.refresh();
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -45,24 +94,29 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
     }
   }
 
+  const limitReached = !!(requestStatus && !requestStatus.canRequest);
+
   return (
     <>
-      <Button 
-        variant="outline" 
-        size={size || "sm"} 
-        onClick={openModal} 
+      <Button
+        variant="outline"
+        size={size || "sm"}
+        onClick={openModal}
         className={cn("rounded-xl", size === "lg" && "px-4 sm:px-8", className)}
       >
         Request Resep
       </Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={closeModal}>
-          <div className="bg-background rounded-2xl w-full max-w-md shadow-xl text-left" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeModal}>
+          <div
+            className="w-full max-w-md rounded-2xl bg-background text-left shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b p-5">
               <div>
-                <p className="font-semibold text-lg">Request Resep</p>
-                <p className="text-muted-foreground text-sm">Ada resep yang ingin kamu lihat? Minta ke Ardya!</p>
+                <p className="text-lg font-semibold">Request Resep</p>
+                <p className="text-sm text-muted-foreground">Ada resep yang ingin kamu lihat? Minta ke Ardya!</p>
               </div>
               <button onClick={closeModal} className="text-muted-foreground hover:text-foreground">
                 <X className="size-5" />
@@ -71,32 +125,111 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
 
             <div className="p-5">
               {success ? (
-                <div className="text-center space-y-3 py-4">
-                  <p className="text-4xl">🎉</p>
-                  <p className="font-semibold">Request terkirim!</p>
-                  <p className="text-muted-foreground text-sm">Ardya akan segera memasak resep pilihanmu.</p>
-                  <Button className="rounded-xl w-full" onClick={closeModal}>Tutup</Button>
+                <div className="space-y-3 py-4 text-center">
+                  <p className="text-3xl">Request terkirim</p>
+                  <p className="font-semibold">Ardya sudah menerima request-mu.</p>
+                  <p className="text-sm text-muted-foreground">Tim akan meninjau resep pilihanmu secepatnya.</p>
+                  {requestStatus && requestStatus.plan !== "premium" && (
+                    <p className="text-xs text-muted-foreground">
+                      Jatah request bulan ini tersisa {requestStatus.remainingThisMonth ?? 0} kali.
+                    </p>
+                  )}
+                  <Button className="w-full rounded-xl" onClick={closeModal}>
+                    Tutup
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+                    {statusLoading ? (
+                      <div className="flex items-center gap-2 text-primary">
+                        <Loader2 className="size-4 animate-spin" />
+                        Mengecek jatah request resep...
+                      </div>
+                    ) : requestStatus?.plan === "premium" ? (
+                      <div className="space-y-1">
+                        <p className="flex items-center gap-2 font-semibold text-foreground">
+                          <Crown className="size-4 text-primary" />
+                          Paket premium: request resep bebas
+                        </p>
+                        <p>Kamu bisa kirim request resep kapan saja tanpa batas bulanan.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <p className="font-semibold text-foreground">Paket free: 1 request resep per bulan</p>
+                        <p>
+                          Sisa request bulan ini: {requestStatus?.remainingThisMonth ?? 1} dari{" "}
+                          {requestStatus?.monthlyLimit ?? 1} kali.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {limitReached && (
+                    <div className="rounded-2xl border border-primary/20 bg-background px-4 py-4">
+                      <p className="font-semibold text-foreground">Jatah request free sudah terpakai</p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        Upgrade paket untuk mendapatkan request resep tanpa batas.
+                      </p>
+                      <Link href="/member/upgrade" className="mt-3 block">
+                        <Button type="button" className="w-full rounded-xl">
+                          Upgrade untuk Bebas Request
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+
                   <div>
                     <Label htmlFor="req-name">Nama kamu</Label>
-                    <Input id="req-name" value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="Contoh: Budi" className="mt-1 rounded-xl border-2" required />
+                    <Input
+                      id="req-name"
+                      value={form.name}
+                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+                      placeholder="Contoh: Budi"
+                      className="mt-1 rounded-xl border-2"
+                      required
+                      disabled={statusLoading || limitReached}
+                    />
                   </div>
+
                   <div>
                     <Label htmlFor="req-recipe">Resep yang diminta</Label>
-                    <Input id="req-recipe" value={form.recipeName} onChange={(e) => setForm((f) => ({ ...f, recipeName: e.target.value }))} placeholder="Contoh: Rendang Padang" className="mt-1 rounded-xl border-2" required />
+                    <Input
+                      id="req-recipe"
+                      value={form.recipeName}
+                      onChange={(e) => setForm((f) => ({ ...f, recipeName: e.target.value }))}
+                      placeholder="Contoh: Rendang Padang"
+                      className="mt-1 rounded-xl border-2"
+                      required
+                      disabled={statusLoading || limitReached}
+                    />
                   </div>
+
                   <div>
                     <Label htmlFor="req-message">Pesan tambahan (opsional)</Label>
-                    <Textarea id="req-message" value={form.message} onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))} placeholder="Misal: versi pedas ya kak!" className="mt-1 rounded-xl border-2 min-h-[70px]" />
+                    <Textarea
+                      id="req-message"
+                      value={form.message}
+                      onChange={(e) => setForm((f) => ({ ...f, message: e.target.value }))}
+                      placeholder="Misal: versi pedas ya kak!"
+                      className="mt-1 min-h-[70px] rounded-xl border-2"
+                      disabled={statusLoading || limitReached}
+                    />
                   </div>
-                  {error && <p className="text-destructive text-sm">{error}</p>}
+
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+
                   <div className="flex gap-2">
-                    <Button type="submit" disabled={loading} className="flex-1 rounded-xl">
+                    <Button
+                      type="submit"
+                      disabled={loading || statusLoading || limitReached}
+                      className="flex-1 rounded-xl"
+                    >
                       {loading ? "Mengirim..." : "Kirim Request"}
                     </Button>
-                    <Button type="button" variant="outline" onClick={closeModal} className="rounded-xl">Batal</Button>
+                    <Button type="button" variant="outline" onClick={closeModal} className="rounded-xl">
+                      Batal
+                    </Button>
                   </div>
                 </form>
               )}

@@ -23,7 +23,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
     }
 
-    await setMemberSession({ id: member._id!.toString(), name: member.name, email: member.email });
+    await setMemberSession({
+      id: member._id!.toString(),
+      name: member.name,
+      email: member.email,
+      aiPlan: member.aiPlan === "premium" ? "premium" : "free",
+    });
     revalidatePath("/member");
     return NextResponse.json({ success: true });
   } catch (e) {

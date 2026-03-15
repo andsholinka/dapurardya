@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getDb } from "@/lib/mongodb";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
-import type { RecipeRequestDoc } from "@/types/recipe-request";
 import { buttonVariants } from "@/lib/button-variants";
 import { AdminRecipeCard } from "@/components/AdminRecipeCard";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
@@ -13,13 +12,6 @@ async function getAllRecipes(): Promise<(Recipe & { _id?: string })[]> {
     const list = await db.collection<RecipeDoc>("recipes").find({}).sort({ updatedAt: -1 }).toArray();
     return list.map((r) => ({ ...r, _id: r._id?.toString() }));
   } catch { return []; }
-}
-
-async function getPendingCount(): Promise<number> {
-  try {
-    const db = await getDb();
-    return db.collection<RecipeRequestDoc>("recipe_requests").countDocuments({ status: "pending" });
-  } catch { return 0; }
 }
 
 async function getAnalytics() {
@@ -62,21 +54,14 @@ async function getAnalytics() {
 }
 
 export default async function AdminPage() {
-  const [recipes, pendingCount, analytics] = await Promise.all([getAllRecipes(), getPendingCount(), getAnalytics()]);
+  const [recipes, analytics] = await Promise.all([getAllRecipes(), getAnalytics()]);
 
   return (
     <>
       <AdminAnalytics data={analytics} />
 
       <div className="flex items-center justify-between mb-6">
-        <Link href="/admin/requests" className={cn(buttonVariants({ variant: "outline" }), "rounded-xl relative")}>
-          Request Resep
-          {pendingCount > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 inline-flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground rounded-full w-5 h-5">
-              {pendingCount}
-            </span>
-          )}
-        </Link>
+        <div />
         <Link href="/admin/resep/new" className={cn(buttonVariants(), "rounded-xl")}>
           + Tambah Resep
         </Link>

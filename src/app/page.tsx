@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { buttonVariants } from "@/lib/button-variants";
 import { getDb } from "@/lib/mongodb";
 import { getMemberSession } from "@/lib/auth";
@@ -53,6 +54,13 @@ export default async function HomePage() {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-12">
       <section className="text-center py-8 md:py-12">
+        <Link 
+          href="/kulkas"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-primary/20 text-primary text-sm font-bold border border-primary/20 hover:scale-105 transition-all shadow-sm mb-6 animate-pulse"
+        >
+          <Sparkles className="size-4" />
+          Baru: AI "Isi Kulkasmu" Suggester
+        </Link>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
           Dapur Ardya
         </h1>

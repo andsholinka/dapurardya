@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getMemberSession } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import type { RecipeRequestDoc, RecipeRequest } from "@/types/recipe-request";
+import { getMemberRecipeRequestStatus } from "@/lib/member-request";
 import MemberDashboard from "./MemberDashboard";
 
 export const dynamic = "force-dynamic";
@@ -26,6 +27,10 @@ async function getMemberRequests(session: { id: string; email: string }): Promis
 export default async function MemberPage() {
   const session = await getMemberSession();
   if (!session) redirect("/member/auth");
-  const requests = await getMemberRequests(session);
-  return <MemberDashboard session={session} requests={requests} />;
+  const db = await getDb();
+  const [requests, requestStatus] = await Promise.all([
+    getMemberRequests(session),
+    getMemberRecipeRequestStatus(db, session),
+  ]);
+  return <MemberDashboard session={session} requests={requests} requestStatus={requestStatus} />;
 }

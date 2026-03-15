@@ -161,12 +161,12 @@ export default function FridgePage() {
                 <p className="text-sm text-muted-foreground">
                   Fitur ini memerlukan 1 Credit untuk setiap penggunaan. Member baru akan mendapatkan 3 Credit saat bergabung.
                 </p>
-                <div className="flex flex-wrap gap-2 pt-1">
+                <div className="flex flex-col sm:flex-row gap-2 pt-1">
                   <Link href="/member/auth?tab=login">
-                    <Button className="rounded-xl">Masuk Member</Button>
+                    <Button className="rounded-xl w-full sm:w-auto">Masuk Member</Button>
                   </Link>
                   <Link href="/member/auth?tab=register">
-                    <Button variant="outline" className="rounded-xl">Daftar Member</Button>
+                    <Button variant="outline" className="rounded-xl w-full sm:w-auto">Daftar Member</Button>
                   </Link>
                 </div>
               </div>
@@ -182,14 +182,14 @@ export default function FridgePage() {
         </div>
         
         <div className="relative z-10 space-y-6">
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
               <Input
                 value={ingredientInput}
                 onChange={(e) => setIngredientInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addIngredient()}
-                placeholder="Masukkan bahan (misal: Telur, Bayam...)"
-                className="h-12 md:h-14 rounded-2xl border-2 pl-4 pr-12 text-base md:text-lg shadow-sm"
+                placeholder="Masukkan bahan (misal: Telur)"
+                className="h-12 md:h-14 rounded-2xl border-2 pl-4 pr-12 text-base md:text-lg shadow-sm w-full"
               />
               <button 
                 onClick={addIngredient}
@@ -199,15 +199,15 @@ export default function FridgePage() {
                 <ArrowRight className="size-5 text-primary" />
               </button>
             </div>
-              <Button 
-                onClick={handleSuggest} 
-                disabled={buttonDisabled}
-                className="h-12 md:h-14 px-6 md:px-10 rounded-2xl font-bold shadow-lg"
-              >
-                {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
-                {primaryButtonLabel}
-              </Button>
-            </div>
+            <Button 
+              onClick={handleSuggest} 
+              disabled={buttonDisabled}
+              className="h-12 md:h-14 px-6 md:px-10 rounded-2xl font-bold shadow-lg w-full sm:w-auto"
+            >
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+              {primaryButtonLabel}
+            </Button>
+          </div>
 
           {/* Tags Container */}
           <div className="min-h-[40px]">

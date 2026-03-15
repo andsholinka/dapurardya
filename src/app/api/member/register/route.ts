@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const result = await col.insertOne({
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      aiPlan: "free",
+      credits: 3,
       passwordHash,
       createdAt: new Date(),
     } as MemberDoc);
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       id: result.insertedId.toString(),
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      aiPlan: "free",
+      credits: 3,
     });
     revalidatePath("/member");
     return NextResponse.json({ success: true });

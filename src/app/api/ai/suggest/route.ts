@@ -2,13 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMemberSession } from "@/lib/auth";
 import { getDb } from "@/lib/mongodb";
 import { getRecipeSuggestions } from "@/lib/gemini";
-import { getMemberAIUsageStatus, recordMemberAIUsage } from "@/lib/member-ai";
+import { getMemberAIUsageStatus } from "@/lib/member-ai";
 import { getFallbackRecipeSuggestions } from "@/lib/recipe-suggestion-fallback";
+import { deductMemberCredit, recordCreditUsage } from "@/lib/member-credits";
 import type { RecipeDoc } from "@/types/recipe";
 
 export async function POST(request: NextRequest) {
   try {
-    const member = await getMemberSession();
+    let member = await getMemberSession();
+    
+    // If not member, check admin
+    if (!member) {
+      const { getAdminSession } = await import("@/lib/auth");
+      const isAdmin = await getAdminSession();
+      if (isAdmin) {
+        member = {
+          id: "admin",
+          name: "Admin",
+          email: "admin@dapurardya.com",
+          credits: 999
+        };
+      }
+    }
+
     if (!member) {
       return NextResponse.json(
         { error: "Fitur Chef AI hanya untuk member. Silakan masuk atau daftar dulu.", code: "MEMBER_REQUIRED" },
@@ -22,11 +38,11 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDb();
-    const usageStatus = await getMemberAIUsageStatus(db, member.id, member.aiPlan);
+    const usageStatus = await getMemberAIUsageStatus(db, member.id);
     if (!usageStatus.canUseAI) {
       return NextResponse.json(
         {
-          error: "Kuota Chef AI mingguan kamu sudah habis. Upgrade paket berbayar untuk akses lebih banyak.",
+          error: "Kamu tidak memiliki Credit yang cukup untuk menggunakan Chef AI. Silakan kumpulkan Credit atau beli paket premium.",
           code: "AI_QUOTA_EXCEEDED",
           aiStatus: usageStatus,
         },
@@ -48,14 +64,26 @@ export async function POST(request: NextRequest) {
     const suggestions =
       aiSuggestions.length > 0 ? aiSuggestions : getFallbackRecipeSuggestions(ingredients, recipes);
 
-    await recordMemberAIUsage(db, member.id, {
-      ingredientsCount: ingredients.length,
-      suggestionsCount: suggestions.length,
-    });
-    const updatedStatus = await getMemberAIUsageStatus(db, member.id, member.aiPlan);
+    if (member.id !== "admin") {
+      const deducted = await deductMemberCredit(db, member.id);
+      if (!deducted) {
+         return NextResponse.json({ error: "Gagal memproses Credit" }, { status: 500 });
+      }
+
+      await recordCreditUsage(db, member.id, {
+        action: "ai_suggest",
+        amount: 1,
+        description: `Chef AI Suggestion with ${ingredients.length} ingredients`,
+        metadata: {
+          ingredientsCount: ingredients.length,
+          suggestionsCount: suggestions.length,
+        },
+      });
+    }
+    const updatedStatus = await getMemberAIUsageStatus(db, member.id);
 
     // Gabungkan data resep lengkap dengan saran AI
-    const result = suggestions.map(s => {
+    const result = suggestions.map((s: any) => {
       const fullRecipe = recipes.find(r => r.slug === s.recipeSlug);
       if (!fullRecipe) return null;
       return {

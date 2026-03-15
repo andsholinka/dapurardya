@@ -7,7 +7,7 @@ import { signOut } from "next-auth/react";
 import type { MemberSession } from "@/lib/auth";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
-import { ChevronDown, User, Bell, BellOff, Loader2 } from "lucide-react";
+import { ChevronDown, User, Bell, BellOff, Loader2, Coins } from "lucide-react";
 import { subscribeUser, unsubscribeUser, getSubscription } from "@/lib/notifications";
 
 export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession | null; isAdmin?: boolean }) {
@@ -154,66 +154,81 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
   }
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5")}
-      >
-        <User className="size-3.5" />
-        <span className="max-w-[50px] sm:max-w-[80px] truncate">{member.name}</span>
-        <ChevronDown className="size-3 shrink-0" />
-      </button>
-      {open && (
-        <div className="absolute right-0 top-full mt-2 w-44 bg-background border-2 rounded-xl shadow-lg overflow-hidden z-50">
-          {isAdmin ? (
-            <Link href="/admin" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
-              Dashboard Admin
-            </Link>
-          ) : (
-            <>
-              <Link href="/member" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
-                Dashboard
-              </Link>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  setIsEditModalOpen(true);
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t"
-              >
-                Edit Profil
-              </button>
-            </>
-          )}
-
-          {isNotifSupported && (
-            <button
-              onClick={toggleNotification}
-              disabled={notifLoading}
-              className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t flex items-center justify-between group"
-            >
-              <span className="flex items-center gap-2">
-                {isSubscribed ? (
-                  <Bell className="size-3.5 text-primary" />
-                ) : (
-                  <BellOff className="size-3.5 text-muted-foreground" />
-                )}
-                Notifikasi
-              </span>
-              <span className={cn(
-                "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
-                isSubscribed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
-              )}>
-                {notifLoading ? <Loader2 className="size-3 animate-spin" /> : (isSubscribed ? "AKTIF" : "MATI")}
-              </span>
-            </button>
-          )}
-
-          <button onClick={logout} className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors border-t">
-            Keluar
-          </button>
+    <div className="flex items-center gap-1.5 sm:gap-3">
+      {/* Credit Display */}
+      {!isAdmin && (
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-xl bg-muted/50 transition-colors">
+          <div className="rounded-full bg-orange-100 p-1 text-orange-600 shrink-0">
+            <Coins className="size-3 sm:size-3.5" />
+          </div>
+          <div className="flex items-baseline gap-1">
+            <span className="text-sm font-bold text-foreground leading-none">{member.credits}</span>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight hidden sm:inline">Credits</span>
+          </div>
         </div>
       )}
+
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen((o) => !o)}
+          className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5")}
+        >
+          <User className="size-3.5" />
+          <span className="max-w-[50px] sm:max-w-[80px] truncate">{member.name}</span>
+          <ChevronDown className="size-3 shrink-0" />
+        </button>
+        {open && (
+          <div className="absolute right-0 top-full mt-2 w-44 bg-background border-2 rounded-xl shadow-lg overflow-hidden z-50">
+            {isAdmin ? (
+              <Link href="/admin" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
+                Dashboard Admin
+              </Link>
+            ) : (
+              <>
+                <Link href="/member" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
+                  Dashboard
+                </Link>
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setIsEditModalOpen(true);
+                  }}
+                  className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t"
+                >
+                  Edit Profil
+                </button>
+              </>
+            )}
+
+            {isNotifSupported && (
+              <button
+                onClick={toggleNotification}
+                disabled={notifLoading}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t flex items-center justify-between group"
+              >
+                <span className="flex items-center gap-2">
+                  {isSubscribed ? (
+                    <Bell className="size-3.5 text-primary" />
+                  ) : (
+                    <BellOff className="size-3.5 text-muted-foreground" />
+                  )}
+                  Notifikasi
+                </span>
+                <span className={cn(
+                  "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
+                  isSubscribed ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                )}>
+                  {notifLoading ? <Loader2 className="size-3 animate-spin" /> : (isSubscribed ? "AKTIF" : "MATI")}
+                </span>
+              </button>
+            )}
+
+            <button onClick={logout} className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-muted transition-colors border-t">
+              Keluar
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Modal Edit Nama */}
       {isEditModalOpen && (

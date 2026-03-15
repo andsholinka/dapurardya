@@ -12,7 +12,7 @@ export async function GET() {
 
   try {
     const db = await getDb();
-    const requestStatus = await getMemberRecipeRequestStatus(db, member);
+    const requestStatus = await getMemberRecipeRequestStatus(db, member.id, member.aiPlan);
 
     return NextResponse.json({
       member: {

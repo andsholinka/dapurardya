@@ -1,4 +1,12 @@
-import { MongoClient, Db } from "mongodb";
+import { MongoClient, Db, ObjectId } from "mongodb";
+
+export function tryConvertObjectId(id: string): ObjectId | null {
+  try {
+    return new ObjectId(id);
+  } catch {
+    return null;
+  }
+}
 
 const uri = process.env.MONGODB_URI || "";
 const dbName = process.env.MONGODB_DB_NAME || "dapurardya";

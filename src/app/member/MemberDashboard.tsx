@@ -6,6 +6,7 @@ import type { MemberRecipeRequestStatus } from "@/lib/member-request";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
 import { Button } from "@/components/ui/button";
+import { Sparkles, Coins } from "lucide-react";
 
 export default function MemberDashboard({
   session,
@@ -27,14 +28,11 @@ export default function MemberDashboard({
             </span>
           </h1>
           <p className="truncate text-xs text-muted-foreground sm:text-sm">{session.email}</p>
-          <p className="mt-1 text-xs font-medium text-primary">
-            Paket Chef AI: {session.aiPlan === "premium" ? "Premium" : "Free"}
-          </p>
         </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Link
             href="/member/saved"
-            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-40"
+            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
           >
             Tersimpan
           </Link>
@@ -42,44 +40,41 @@ export default function MemberDashboard({
             memberId={session.id}
             memberName={session.name}
             size="sm"
-            className="h-9 w-full text-xs font-semibold shadow-sm sm:w-40"
+            className="h-9 w-full text-xs font-semibold shadow-sm sm:w-32"
           />
+          <Link
+            href="/member/upgrade"
+            className="col-span-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-primary text-xs font-bold text-primary-foreground shadow-sm transition-all hover:opacity-90 sm:col-auto sm:w-32"
+          >
+            <Coins className="size-3.5" />
+            + Top Up
+          </Link>
         </div>
       </div>
 
-      <div className="mb-8 rounded-2xl border-2 border-primary/20 bg-card p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h2 className="font-semibold">Chef AI Member</h2>
-            <p className="text-sm text-muted-foreground">
-              {session.aiPlan === "premium"
-                ? "Kamu sudah berada di paket premium dengan akses Chef AI lebih leluasa."
-                : "Member free mendapat 2 kali penggunaan Chef AI setiap 7 hari. Upgrade untuk akses lebih banyak."}
-            </p>
+      <div className="mb-8 rounded-2xl border-2 border-primary/10 bg-card p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-3">
+            <div className="rounded-xl bg-primary/10 p-2 text-primary">
+              <Sparkles className="size-5" />
+            </div>
+            <div>
+              <h2 className="font-bold">Chef AI & Request Resep</h2>
+              <p className="text-sm text-muted-foreground">
+                Setiap penggunaan fitur AI atau request resep akan mengurangi <span className="font-bold text-foreground">1 Credit</span>.
+              </p>
+            </div>
           </div>
-          {session.aiPlan !== "premium" && (
-            <Link href="/member/upgrade" className="shrink-0">
-              <Button variant="outline" className="rounded-xl">
-                Upgrade Paket
-              </Button>
-            </Link>
-          )}
+          <Link href="/member/upgrade" className="shrink-0">
+            <Button className="rounded-xl w-full sm:w-auto">
+              Isi Ulang Credits
+            </Button>
+          </Link>
         </div>
       </div>
 
-      <h2 className="mb-3 font-semibold">Request Resepmu</h2>
-      <div className="mb-4 rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
-        {requestStatus.plan === "premium" ? (
-          <p>Kamu sudah di paket premium. Request resep sekarang bebas tanpa batas bulanan.</p>
-        ) : (
-          <p>
-            Paket free mendapat 1 request resep per bulan. Sisa bulan ini:{" "}
-            <span className="font-semibold text-foreground">
-              {requestStatus.remainingThisMonth ?? 0} dari {requestStatus.monthlyLimit ?? 1}
-            </span>
-            .
-          </p>
-        )}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="font-bold">Riwayat Request Resep</h2>
       </div>
       {requests.length === 0 ? (
         <p className="py-8 text-center text-sm text-muted-foreground">

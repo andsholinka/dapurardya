@@ -15,7 +15,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const nextPlan = body?.aiPlan === "premium" ? "premium" : "free";
+    const nextCredits = body?.credits !== undefined ? Number(body.credits) : undefined;
 
     if (!ObjectId.isValid(id)) {
       return NextResponse.json({ error: "ID member tidak valid" }, { status: 400 });
@@ -24,9 +24,12 @@ export async function PUT(
     const db = await getDb();
     const members = db.collection("members");
 
+    const updateData: any = {};
+    if (nextCredits !== undefined) updateData.credits = nextCredits;
+
     const result = await members.findOneAndUpdate(
       { _id: new ObjectId(id) },
-      { $set: { aiPlan: nextPlan } },
+      { $set: updateData },
       { returnDocument: "after" }
     );
 
@@ -39,12 +42,12 @@ export async function PUT(
         id: result._id.toString(),
         name: result.name || result.email,
         email: result.email,
-        aiPlan: result.aiPlan === "premium" ? "premium" : "free",
+        credits: result.credits || 0,
         createdAt: result.createdAt instanceof Date ? result.createdAt.toISOString() : null,
       },
     });
   } catch (error) {
     console.error("[ADMIN_MEMBER_PLAN] Error:", error);
-    return NextResponse.json({ error: "Gagal memperbarui paket member" }, { status: 500 });
+    return NextResponse.json({ error: "Gagal memperbarui data member" }, { status: 500 });
   }
 }

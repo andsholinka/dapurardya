@@ -25,18 +25,11 @@ interface MemberInfo {
   id: string;
   name: string;
   email: string;
-  aiPlan: "free" | "premium";
 }
 
 interface AIUsageStatus {
-  plan: "free" | "premium";
-  weeklyLimit: number | null;
-  usedThisWeek: number;
-  remainingThisWeek: number | null;
+  credits: number;
   canUseAI: boolean;
-  upgradeRequired: boolean;
-  windowStartedAt: string;
-  nextAvailableAt: string | null;
 }
 
 export default function FridgePage() {
@@ -120,6 +113,7 @@ export default function FridgePage() {
       }
       setResults(data.suggestions || []);
       if (data.aiStatus) setAIStatus(data.aiStatus);
+      router.refresh();
     } catch (err) {
       console.error(err);
       setRequestError("Terjadi gangguan saat menghubungi Chef AI. Coba lagi sebentar.");
@@ -165,7 +159,7 @@ export default function FridgePage() {
               <div className="flex-1 space-y-2">
                 <h2 className="text-lg font-semibold">Chef AI Khusus Member</h2>
                 <p className="text-sm text-muted-foreground">
-                  Fitur ini hanya tersedia untuk member Dapur Ardya. Member gratis mendapat 2 kali penggunaan setiap 7 hari.
+                  Fitur ini memerlukan 1 Credit untuk setiap penggunaan. Member baru akan mendapatkan 3 Credit saat bergabung.
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Link href="/member/auth?tab=login">
@@ -178,39 +172,7 @@ export default function FridgePage() {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="rounded-3xl border-2 border-primary/20 bg-card px-5 py-5 shadow-sm">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
-                  {member.aiPlan === "premium" ? <Crown className="size-3.5" /> : <Sparkles className="size-3.5" />}
-                  {member.aiPlan === "premium" ? "Chef AI Premium" : "Chef AI Member"}
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  {member.aiPlan === "premium"
-                    ? "Akses Chef AI tanpa batas untuk member premium."
-                    : `Sisa kuota minggu ini: ${aiStatus?.remainingThisWeek ?? 0} dari ${aiStatus?.weeklyLimit ?? 2} kali.`}
-                </p>
-                {aiStatus?.nextAvailableAt && (
-                  <p className="text-xs text-muted-foreground">
-                    Kuota berikutnya tersedia lagi pada {new Date(aiStatus.nextAvailableAt).toLocaleDateString("id-ID", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}.
-                  </p>
-                )}
-              </div>
-              {member.aiPlan !== "premium" && (
-                <Link href="/member/upgrade">
-                  <Button variant="outline" className="rounded-xl">
-                    Upgrade Paket Berbayar
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
 
       {/* Input Section */}
@@ -284,7 +246,7 @@ export default function FridgePage() {
           )}
           {member && aiStatus && !aiStatus.canUseAI && (
             <p className="text-xs text-muted-foreground">
-              Jatah mingguan free plan sudah habis. Upgrade paket untuk akses Chef AI lebih banyak.
+              Credit kamu sudah habis. Silakan kumpulkan Credit atau Top Up paket untuk akses Chef AI.
             </p>
           )}
           {requestError && <p className="text-sm text-destructive">{requestError}</p>}

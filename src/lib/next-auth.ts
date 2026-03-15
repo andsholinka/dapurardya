@@ -19,7 +19,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           { email: user.email },
           {
             $set: { name: user.name, email: user.email, image: user.image, updatedAt: new Date() },
-            $setOnInsert: { createdAt: new Date(), provider: "google", aiPlan: "free" },
+            $setOnInsert: { createdAt: new Date(), provider: "google", credits: 3 },
           },
           { upsert: true }
         );

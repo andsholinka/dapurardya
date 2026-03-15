@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
       id: member._id!.toString(),
       name: member.name,
       email: member.email,
-      aiPlan: member.aiPlan === "premium" ? "premium" : "free",
+      credits: member.credits || 0,
     });
     revalidatePath("/member");
     return NextResponse.json({ success: true });

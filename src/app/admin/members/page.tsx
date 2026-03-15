@@ -16,7 +16,7 @@ async function getLatestMembers() {
       id: member._id?.toString() || "",
       name: member.name || member.email,
       email: member.email,
-      aiPlan: (member.aiPlan === "premium" ? "premium" : "free") as "free" | "premium",
+      credits: member.credits || 0,
       createdAt: member.createdAt instanceof Date ? member.createdAt.toISOString() : null,
     })) as AdminMemberSummary[];
   } catch {
@@ -29,12 +29,6 @@ export default async function AdminMembersPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-bold text-foreground">Kelola Member Premium</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Gunakan laman khusus ini untuk mengaktifkan premium setelah pembayaran upgrade diverifikasi.
-        </p>
-      </div>
 
       <AdminMemberPlans initialMembers={latestMembers} />
     </div>

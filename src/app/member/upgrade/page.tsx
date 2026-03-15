@@ -12,42 +12,61 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getMemberSession } from "@/lib/auth";
 
 const plans = [
   {
-    name: "Member Free",
-    badge: "Untuk coba dulu",
-    price: "Rp 0",
-    cadence: "/selamanya",
-    description: "Cocok untuk kenalan dengan Chef AI sebelum upgrade.",
+    name: "Starter Credits",
+    badge: "Paling Murah",
+    price: "Rp 15.000",
+    cadence: "/10 Credits",
+    description: "Cocok untuk yang ingin mencoba fitur AI secara santai.",
     highlights: [
-      "2 kali penggunaan Chef AI setiap 7 hari",
-      "1 request resep per bulan",
-      "Tetap bisa akses resep publik Dapur Ardya",
-      "Bisa simpan resep favorit",
+      "10 Credits siap pakai",
+      "Tanpa batas waktu (selamanya)",
+      "Bebas pakai untuk Chef AI",
+      "Bebas pakai untuk Request Resep",
     ],
-    ctaLabel: "Tetap di Paket Free",
-    ctaHref: "/member",
+    ctaLabel: "Ambil 10 Credits",
+    ctaHref: "#foto-qr",
     featured: false,
   },
   {
-    name: "Chef AI Premium",
-    badge: "Paling direkomendasikan",
-    price: "Rp 29.000",
-    cadence: "/minggu",
-    description: "Untuk yang sering masak dan ingin rekomendasi AI lebih leluasa kapan saja.",
+    name: "Basic Credits",
+    badge: "Paling Populer",
+    price: "Rp 25.000",
+    cadence: "/25 Credits",
+    description: "Pilihan terbaik untuk ritme masak harian keluarga.",
     highlights: [
-      "Akses Chef AI tanpa batas mingguan",
-      "Request resep tanpa batas",
-      "Prioritas untuk eksplor ide menu dari bahan sisa",
-      "Alur upgrade sederhana via QRIS manual",
+      "25 Credits siap pakai",
+      "Lebih hemat Rp 12.500",
+      "Tanpa batas waktu",
+      "Bebas pakai untuk semua fitur",
+      "Prioritas update resep",
     ],
-    ctaLabel: "Bayar via QR Sekarang",
+    ctaLabel: "Ambil 25 Credits",
     ctaHref: "#foto-qr",
     featured: true,
+  },
+  {
+    name: "Pro Credits",
+    badge: "Value Terbaik",
+    price: "Rp 40.000",
+    cadence: "/50 Credits",
+    description: "Untuk pecinta masak yang ingin eksplorasi tanpa ragu.",
+    highlights: [
+      "50 Credits siap pakai",
+      "Hemat besar (Hanya Rp 800/credit)",
+      "Tanpa batas waktu",
+      "Akses fitur prioritas",
+      "Dukungan penuh tim dapur",
+    ],
+    ctaLabel: "Ambil 50 Credits",
+    ctaHref: "#foto-qr",
+    featured: false,
   },
 ];
 
@@ -59,9 +78,9 @@ const valuePoints = [
 
 const faqs = [
   {
-    question: "Bagaimana cara upgrade sekarang?",
+    question: "Bagaimana cara isi credits sekarang?",
     answer:
-      "Untuk sementara upgrade masih manual. Scan QR code yang tersedia, lakukan pembayaran, lalu kirim bukti transfer ke admin agar paket premium diaktifkan.",
+      "Untuk sementara isi credits masih manual. Scan QR code yang tersedia, lakukan pembayaran, lalu kirim bukti transfer ke admin agar credits segera ditambahkan ke akun Anda.",
   },
   {
     question: "Apakah sudah terhubung payment gateway?",
@@ -69,14 +88,14 @@ const faqs = [
       "Belum. Halaman ini sengaja dibuat transparan sesuai kondisi saat ini. Begitu payment gateway aktif, alur ini bisa diganti tanpa mengubah pengalaman utama pengguna.",
   },
   {
-    question: "Apa bedanya member free dan premium?",
+    question: "Bagaimana jika credit awal saya habis?",
     answer:
-      "Member free mendapat 2 kali penggunaan Chef AI setiap 7 hari dan 1 request resep per bulan. Member premium mendapatkan akses Chef AI dan request resep tanpa batas.",
+      "Member baru otomatis mendapatkan 3 Credits di awal secara gratis. Jika habis, Anda bisa melakukan Top Up paket Credits (Starter/Basic/Pro) untuk terus menggunakan fitur Chef AI dan Request Resep. Credits tidak akan hangus (selamanya).",
   },
   {
-    question: "Setelah bayar, kapan akun saya di-upgrade?",
+    question: "Setelah bayar, kapan Credits saya bertambah?",
     answer:
-      "Begitu admin menerima dan memverifikasi bukti pembayaran, status akun akan diperbarui ke paket premium. Karena masih manual, prosesnya tidak instan seperti payment gateway.",
+      "Begitu admin memverifikasi bukti pembayaran Anda, admin akan mengupdate jumlah Credits di akun Anda secara manual. Proses ini biasanya memakan waktu singkat setelah konfirmasi via WhatsApp.",
   },
 ];
 
@@ -91,42 +110,20 @@ export default async function MemberUpgradePage() {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top,rgba(201,66,133,0.18),transparent_60%)]" />
 
       <div className="container relative mx-auto max-w-6xl px-4 py-8 sm:py-12">
-        <Link
-          href="/member"
-          className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-4 py-2 text-sm font-medium text-muted-foreground shadow-sm backdrop-blur transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" />
-          Kembali ke Member Area
-        </Link>
 
         <section className="mx-auto max-w-4xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-primary/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.24em] text-primary">
-            <Sparkles className="size-3.5" />
-            Upgrade Chef AI
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="size-3" />
+            Simple Credit-Based Pricing
           </div>
           <h1 className="mt-6 text-4xl font-black tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Paket Premium yang
-            <span className="block text-primary">lebih pas untuk ritme masak harian</span>
+            Bayar Sesuai Kebutuhan
           </h1>
           <p className="mx-auto mt-5 max-w-3xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Kami adaptasi halaman upgrade ini khusus untuk Dapur Ardya: lebih hangat, lebih jelas, dan jujur
-            dengan kondisi saat ini. Belum ada payment gateway, jadi pembayaran dilakukan manual melalui QR code
-            yang aman dan mudah di-scan.
+            Beli kredit sekali, gunakan kapan saja. Tanpa biaya langganan, tanpa biaya bulanan.
+            <span className="block text-primary font-semibold">Kredit tidak pernah hangus.</span>
           </p>
 
-          <div className="mt-8 grid gap-3 text-left sm:grid-cols-3">
-            {valuePoints.map((point) => (
-              <div
-                key={point}
-                className="rounded-2xl border border-primary/15 bg-background/90 px-4 py-4 text-sm text-muted-foreground shadow-sm"
-              >
-                <div className="mb-3 inline-flex rounded-full bg-primary/10 p-2 text-primary">
-                  <BadgeCheck className="size-4" />
-                </div>
-                <p>{point}</p>
-              </div>
-            ))}
-          </div>
         </section>
 
         <section className="mt-12 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -206,10 +203,10 @@ export default async function MemberUpgradePage() {
               <QrCode className="size-3.5" />
               Pembayaran Manual
             </div>
-            <h2 className="mt-4 text-2xl font-bold text-foreground">Scan QR untuk upgrade premium</h2>
+            <h2 className="mt-4 text-2xl font-bold text-foreground">Scan QR untuk Top Up Credits</h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Karena belum memakai payment gateway, pembayaran masih dilakukan manual. Setelah transfer, kirim
-              bukti pembayaran agar paket premium bisa kami aktifkan.
+              bukti pembayaran agar saldo credits bisa segera kami tambahkan ke akun Anda.
             </p>
 
             <div className="mt-6 rounded-[1.5rem] border border-primary/15 bg-background p-4">
@@ -227,8 +224,12 @@ export default async function MemberUpgradePage() {
                 />
               </div>
               <div className="mt-4 rounded-2xl bg-primary/5 p-4 text-sm text-muted-foreground">
-                <p className="font-semibold text-foreground">Nominal yang disarankan</p>
-                <p className="mt-1">Chef AI Premium: Rp 29.000 per minggu</p>
+                <p className="font-semibold text-foreground">Daftar Harga Paket Credits</p>
+                <ul className="mt-1 space-y-1">
+                  <li>• Starter (10 Credits): Rp 15.000</li>
+                  <li>• Basic (25 Credits): Rp 25.000</li>
+                  <li>• Pro (50 Credits): Rp 40.000</li>
+                </ul>
               </div>
             </div>
 
@@ -238,7 +239,7 @@ export default async function MemberUpgradePage() {
                 <div>
                   <p className="text-sm font-semibold text-foreground">Konfirmasi setelah bayar</p>
                   <p className="text-sm text-muted-foreground">
-                    Simpan bukti pembayaran, lalu kirimkan ke admin agar paket premium diaktifkan secara manual.
+                    Simpan bukti pembayaran, lalu kirimkan ke admin agar saldo credits Anda segera diupdate secara manual.
                   </p>
                 </div>
               </div>

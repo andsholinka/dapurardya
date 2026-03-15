@@ -117,19 +117,20 @@ export function CookingInstructions({ recipeId, recipeTitle, ingredients, steps 
           </span>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-2">
+          <div className="grid grid-cols-1 gap-1">
             {ingredients.map((ing, i) => (
               <button
                 key={i}
                 onClick={() => toggleIngredient(i)}
                 className={cn(
-                  "flex items-start text-left gap-3 p-2.5 rounded-xl transition-all border border-transparent",
+                  "flex items-start text-left gap-3 py-1 px-1.5 rounded-xl transition-all border border-transparent hover:bg-muted/30",
                   checkedIngredients[i] 
-                    ? "bg-primary/5 text-muted-foreground" 
-                    : "hover:bg-muted/50 hover:border-border"
+                    ? "bg-primary/5 text-muted-foreground opacity-60" 
+                    : ""
                 )}
               >
-                <div className="mt-0.5 shrink-0">
+                {/* Container dengan tinggi sama dengan line-height (1.625 * 14px = ~22.75px) */}
+                <div className="shrink-0 h-[22.75px] flex items-center">
                   {checkedIngredients[i] ? (
                     <CheckCircle2 className="size-5 text-primary fill-primary/10" />
                   ) : (
@@ -138,7 +139,7 @@ export function CookingInstructions({ recipeId, recipeTitle, ingredients, steps 
                 </div>
                 <span className={cn(
                   "text-sm leading-relaxed",
-                  checkedIngredients[i] && "line-through opacity-70"
+                  checkedIngredients[i] && "line-through"
                 )}>
                   {ing}
                 </span>
@@ -157,37 +158,39 @@ export function CookingInstructions({ recipeId, recipeTitle, ingredients, steps 
           </span>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
+          <div className="grid gap-1">
             {steps.map((step, i) => {
               const duration = parseDuration(step);
               return (
-                <div key={i} className="flex gap-3">
+                <div key={i} className="flex gap-3 group">
                   <button
                     onClick={() => toggleStep(i)}
                     className={cn(
-                      "mt-0.5 shrink-0 transition-transform active:scale-90",
-                      checkedSteps[i] ? "text-primary" : "text-muted-foreground/30"
+                      "shrink-0 transition-transform active:scale-90 h-[22.75px] flex items-center",
+                      checkedSteps[i] ? "text-primary" : "text-muted-foreground/30 group-hover:text-muted-foreground/50"
                     )}
                   >
                     {checkedSteps[i] ? (
-                      <CheckCircle2 className="size-6 fill-primary/10" />
+                      <CheckCircle2 className="size-5 fill-primary/10" />
                     ) : (
-                      <div className="size-6 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-bold">
+                      <div className="size-5 rounded-full border-2 border-current flex items-center justify-center text-[10px] font-black">
                         {i + 1}
                       </div>
                     )}
                   </button>
                   
-                  <div className="flex-1 space-y-2 pb-4 border-b last:border-0 border-border/50">
+                  <div className="flex-1 space-y-1.5 pb-3 border-b border-border/40 group-last:border-0 group-last:pb-0">
                     <p className={cn(
                       "text-sm leading-relaxed transition-all",
-                      checkedSteps[i] && "text-muted-foreground line-through opacity-70"
+                      checkedSteps[i] && "text-muted-foreground line-through opacity-60"
                     )}>
                       {step}
                     </p>
                     
                     {duration && (
-                      <StepTimer minutes={duration} />
+                      <div className="scale-90 origin-left">
+                        <StepTimer minutes={duration} />
+                      </div>
                     )}
                   </div>
                 </div>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Crown, Loader2, X } from "lucide-react";
+import { Crown, Loader2, X, Coins } from "lucide-react";
 import type { MemberRecipeRequestStatus } from "@/lib/member-request";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
     e.preventDefault();
 
     if (requestStatus && !requestStatus.canRequest) {
-      setError("Paket free hanya bisa request resep 1 kali per bulan. Upgrade untuk request tanpa batas.");
+      setError("Kamu tidak memiliki Credit yang cukup untuk merequest resep. Silakan kumpulkan Credit atau Top Up paket Credits.");
       return;
     }
 
@@ -129,9 +129,9 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
                   <p className="text-3xl">Request terkirim</p>
                   <p className="font-semibold">Ardya sudah menerima request-mu.</p>
                   <p className="text-sm text-muted-foreground">Tim akan meninjau resep pilihanmu secepatnya.</p>
-                  {requestStatus && requestStatus.plan !== "premium" && (
-                    <p className="text-xs text-muted-foreground">
-                      Jatah request bulan ini tersisa {requestStatus.remainingThisMonth ?? 0} kali.
+                  {requestStatus && (
+                    <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
+                      <Coins className="size-3" /> Sisa Credit-mu: {requestStatus.credits}
                     </p>
                   )}
                   <Button className="w-full rounded-xl" onClick={closeModal}>
@@ -144,36 +144,30 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
                     {statusLoading ? (
                       <div className="flex items-center gap-2 text-primary">
                         <Loader2 className="size-4 animate-spin" />
-                        Mengecek jatah request resep...
-                      </div>
-                    ) : requestStatus?.plan === "premium" ? (
-                      <div className="space-y-1">
-                        <p className="flex items-center gap-2 font-semibold text-foreground">
-                          <Crown className="size-4 text-primary" />
-                          Paket premium: request resep bebas
-                        </p>
-                        <p>Kamu bisa kirim request resep kapan saja tanpa batas bulanan.</p>
+                        Mengecek Credits...
                       </div>
                     ) : (
                       <div className="space-y-1">
-                        <p className="font-semibold text-foreground">Paket free: 1 request resep per bulan</p>
+                        <p className="font-semibold text-foreground flex items-center gap-2">
+                          <Coins className="size-4 text-primary" />
+                          Gunakan 1 Credit untuk Request
+                        </p>
                         <p>
-                          Sisa request bulan ini: {requestStatus?.remainingThisMonth ?? 1} dari{" "}
-                          {requestStatus?.monthlyLimit ?? 1} kali.
+                          Sisa Credit milikmu: <span className="font-bold text-primary">{requestStatus?.credits ?? 0}</span>
                         </p>
                       </div>
                     )}
                   </div>
 
-                  {limitReached && (
-                    <div className="rounded-2xl border border-primary/20 bg-background px-4 py-4">
-                      <p className="font-semibold text-foreground">Jatah request free sudah terpakai</p>
+                   {limitReached && (
+                    <div className="rounded-2xl border-2 border-primary/20 bg-background px-4 py-4">
+                      <p className="font-bold text-foreground">Credit Kamu Habis</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        Upgrade paket untuk mendapatkan request resep tanpa batas.
+                        Dapatkan lebih banyak Credit untuk terus me-request resep favoritmu.
                       </p>
-                      <Link href="/member/upgrade" className="mt-3 block">
+                      <Link href="/member/upgrade" className="mt-4 block">
                         <Button type="button" className="w-full rounded-xl">
-                          Upgrade untuk Bebas Request
+                          Isi Ulang Credits
                         </Button>
                       </Link>
                     </div>

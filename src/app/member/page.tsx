@@ -24,13 +24,14 @@ async function getMemberRequests(session: { id: string; email: string }): Promis
   } catch { return []; }
 }
 
+
 export default async function MemberPage() {
   const session = await getMemberSession();
   if (!session) redirect("/member/auth");
   const db = await getDb();
   const [requests, requestStatus] = await Promise.all([
     getMemberRequests(session),
-    getMemberRecipeRequestStatus(db, session),
+    getMemberRecipeRequestStatus(db, session.id, session.aiPlan),
   ]);
   return <MemberDashboard session={session} requests={requests} requestStatus={requestStatus} />;
 }

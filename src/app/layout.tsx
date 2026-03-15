@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { RegisterSW } from "@/components/RegisterSW";
 import { InstallPWA } from "@/components/InstallPWA";
+import { NotificationManager } from "@/components/NotificationManager";
 import { SessionProvider } from "@/components/SessionProvider";
 
 const quicksand = Quicksand({
@@ -63,6 +64,7 @@ export default function RootLayout({
           </footer>
           <RegisterSW />
           <InstallPWA />
+          <NotificationManager />
         </SessionProvider>
       </body>
     </html>

@@ -60,3 +60,46 @@ self.addEventListener("fetch", (e) => {
     })
   );
 });
+
+// Handle Push Notifications
+self.addEventListener("push", (e) => {
+  const data = e.data?.json() || {
+    title: "Dapur Ardya Update",
+    body: "Ada fitur baru untukmu!",
+    icon: "/icon-192.png",
+  };
+
+  const options = {
+    body: data.body,
+    icon: data.icon || "/icon-192.png",
+    badge: "/icon-192.png", // Icon satu warna untuk status bar
+    data: {
+      url: data.url || "/",
+    },
+    actions: [
+      { action: "open", title: "Buka Sekarang" },
+      { action: "close", title: "Tutup" },
+    ],
+  };
+
+  e.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+// Handle Notification Click
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+
+  if (e.action === "close") return;
+
+  const urlToOpen = e.notification.data.url || "/";
+
+  e.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // Jika tab sudah terbuka, fokuskan. Jika tidak, buka tab baru.
+      for (let client of windowClients) {
+        if (client.url === urlToOpen && "focus" in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(urlToOpen);
+    })
+  );
+});

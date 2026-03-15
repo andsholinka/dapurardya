@@ -23,10 +23,10 @@ export default async function AdminLayout({
             Dashboard
           </Link>
           <Link
-            href="/admin/members"
+            href="/admin/broadcast"
             className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}
           >
-            Member Premium
+            Broadcast Notifikasi
           </Link>
           <Link href="/" className={cn(buttonVariants({ variant: "outline", size: "sm" }), "rounded-xl")}>
             Beranda

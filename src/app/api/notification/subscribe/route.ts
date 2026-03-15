@@ -1,0 +1,26 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getDb } from "@/lib/mongodb";
+
+export async function POST(req: NextRequest) {
+  try {
+    const subscription = await req.json();
+
+    if (!subscription || !subscription.endpoint) {
+      return NextResponse.json({ error: "Invalid subscription" }, { status: 400 });
+    }
+
+    const db = await getDb();
+    
+    // Simpan subscription. Gunakan endpoint sebagai unique key agar tidak duplikat.
+    await db.collection("push_subscriptions").updateOne(
+      { endpoint: subscription.endpoint },
+      { $set: { ...subscription, updatedAt: new Date() } },
+      { upsert: true }
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[PUSH_SUBSCRIBE_ERROR]", error);
+    return NextResponse.json({ error: "Gagal menyimpan subscription" }, { status: 500 });
+  }
+}

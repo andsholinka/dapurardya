@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth-v2";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
 import { sendRequestNotification } from "@/lib/email";
 import { getMemberRecipeRequestStatus } from "@/lib/member-request";
-import { deductMemberCredit, recordCreditUsage } from "@/lib/member-credits";
+import { deductMemberCredits, recordCreditUsage } from "@/lib/member-credits";
 import { validateOrThrow, recipeRequestSchema } from "@/lib/validation";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { logger, apiError } from "@/lib/logger";
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (memberSession.id !== "admin") {
-      const deducted = await deductMemberCredit(db, memberSession.id);
+      const deducted = await deductMemberCredits(db, memberSession.id, 1);
       if (!deducted) {
          return NextResponse.json({ error: "Gagal memproses Credit" }, { status: 500 });
       }

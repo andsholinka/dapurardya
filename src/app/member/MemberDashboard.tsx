@@ -1,40 +1,45 @@
 "use client";
 
 import Link from "next/link";
-import type { MemberSession } from "@/lib/auth";
+import type { AuthSession } from "@/lib/auth-v2";
 import type { MemberRecipeRequestStatus } from "@/lib/member-request";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Coins } from "lucide-react";
+import { Sparkles, Coins, Wand2, Images } from "lucide-react";
 
 export default function MemberDashboard({
   session,
   requests,
   requestStatus,
 }: {
-  session: MemberSession;
+  session: AuthSession;
   requests: RecipeRequest[];
   requestStatus: MemberRecipeRequestStatus;
 }) {
   return (
     <div className="container max-w-2xl mx-auto px-4 py-4 sm:py-8">
       <div className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div className="min-w-0 flex-1">
-          <h1 className="flex items-center gap-2 text-xl font-bold text-foreground sm:text-2xl">
-            <span className="truncate">Halo, {session.name}</span>
-            <span className="shrink-0" aria-hidden="true">
-              👋
-            </span>
-          </h1>
-          <p className="truncate text-xs text-muted-foreground sm:text-sm">{session.email}</p>
-        </div>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:items-center">
           <Link
             href="/member/saved"
             className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
           >
             Tersimpan
+          </Link>
+          <Link
+            href="/member/icon-studio"
+            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
+          >
+            <Wand2 className="size-3.5" />
+            Icon Studio
+          </Link>
+          <Link
+            href="/member/icon-studio/gallery"
+            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
+          >
+            <Images className="size-3.5" />
+            Galeri Icon
           </Link>
           <RequestModal
             memberId={session.id}

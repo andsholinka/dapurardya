@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { getDb } from "@/lib/mongodb";
 import type { RecipeRequestDoc, RecipeRequest } from "@/types/recipe-request";
 import { getMemberRecipeRequestStatus } from "@/lib/member-request";
@@ -11,27 +11,22 @@ async function getMemberRequests(session: { id: string; email: string }): Promis
   try {
     const db = await getDb();
     const list = await db.collection<RecipeRequestDoc>("recipe_requests")
-      .find({
-        $or: [
-          { memberId: session.id },
-          { memberId: session.email },
-          { memberEmail: session.email }
-        ]
-      })
+      .find({ $or: [{ memberId: session.id }, { memberEmail: session.email }] })
       .sort({ createdAt: -1 })
       .toArray();
     return list.map((r) => ({ ...r, _id: r._id?.toString() })) as RecipeRequest[];
   } catch { return []; }
 }
 
-
 export default async function MemberPage() {
-  const session = await getMemberSession();
+  const session = await getSession();
   if (!session) redirect("/member/auth");
+
   const db = await getDb();
   const [requests, requestStatus] = await Promise.all([
     getMemberRequests(session),
     getMemberRecipeRequestStatus(db, session.id),
   ]);
+
   return <MemberDashboard session={session} requests={requests} requestStatus={requestStatus} />;
 }

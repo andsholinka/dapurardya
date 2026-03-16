@@ -1,14 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ObjectId } from "mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { getDb } from "@/lib/mongodb";
+import { apiError } from "@/lib/logger";
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) {
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -46,8 +47,5 @@ export async function PUT(
         createdAt: result.createdAt instanceof Date ? result.createdAt.toISOString() : null,
       },
     });
-  } catch (error) {
-    console.error("[ADMIN_MEMBER_PLAN] Error:", error);
-    return NextResponse.json({ error: "Gagal memperbarui data member" }, { status: 500 });
-  }
+  } catch (error) { return apiError("ADMIN_MEMBER_PLAN", error, "Gagal memperbarui data member"); }
 }

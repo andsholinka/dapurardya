@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireAdmin, getSession } from "@/lib/auth-v2";
 import { slugify } from "@/lib/slug";
 import { getLegacyRecipeImagesFromGallery, normalizeRecipeGallery } from "@/lib/recipe-gallery";
 import type { RecipeDoc, RecipeInput } from "@/types/recipe";
 import { ObjectId } from "mongodb";
+import { apiError } from "@/lib/logger";
 
 const COLLECTION = "recipes";
 
@@ -16,7 +17,8 @@ export async function GET(
     const { id } = await params;
     const db = await getDb();
     const col = db.collection<RecipeDoc>(COLLECTION);
-    const isAdmin = await getAdminSession();
+    const session = await getSession();
+    const isAdmin = session?.role === "admin";
     const byId = ObjectId.isValid(id) ? { _id: new ObjectId(id) } : { slug: id };
     const filter = byId as { _id?: ObjectId; slug?: string };
     if (!isAdmin) (filter as Record<string, unknown>).published = true;
@@ -28,13 +30,7 @@ export async function GET(
       ...recipe,
       _id: recipe._id?.toString(),
     });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json(
-      { error: "Gagal mengambil resep" },
-      { status: 500 }
-    );
-  }
+  } catch (e) { return apiError("RECIPE_GET", e, "Gagal mengambil resep"); }
 }
 
 export async function PUT(
@@ -42,10 +38,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const isAdmin = await getAdminSession();
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
     const { id } = await params;
     const body = (await request.json()) as RecipeInput;
     const { title, description, ingredients, steps, category, image, images, gallery, prepTimeMinutes, cookTimeMinutes, servings, published, memberOnly, tags } = body;
@@ -99,13 +92,7 @@ export async function PUT(
       ...result,
       _id: result._id?.toString(),
     });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json(
-      { error: "Gagal memperbarui resep" },
-      { status: 500 }
-    );
-  }
+  } catch (e) { return apiError("RECIPE_PUT", e, "Gagal memperbarui resep"); }
 }
 
 export async function DELETE(
@@ -113,10 +100,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const isAdmin = await getAdminSession();
-    if (!isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    await requireAdmin();
     const { id } = await params;
     const db = await getDb();
     const col = db.collection<RecipeDoc>(COLLECTION);
@@ -126,11 +110,5 @@ export async function DELETE(
       return NextResponse.json({ error: "Resep tidak ditemukan" }, { status: 404 });
     }
     return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error(e);
-    return NextResponse.json(
-      { error: "Gagal menghapus resep" },
-      { status: 500 }
-    );
-  }
+  } catch (e) { return apiError("RECIPE_DELETE", e, "Gagal menghapus resep"); }
 }

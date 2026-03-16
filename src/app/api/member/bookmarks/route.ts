@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { getDb } from "@/lib/mongodb";
 
 // GET /api/member/bookmarks — ambil daftar slug yang di-bookmark member
 export async function GET() {
-  const session = await getMemberSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const db = await getDb();
@@ -14,7 +14,7 @@ export async function GET() {
 
 // POST /api/member/bookmarks — toggle bookmark { recipeId: string }
 export async function POST(req: NextRequest) {
-  const session = await getMemberSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { recipeId } = await req.json();

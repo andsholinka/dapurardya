@@ -1,4 +1,4 @@
-const CACHE_NAME = "dapurardya-v1.1";
+const CACHE_NAME = "dapurardya-v1.2";
 const STATIC_ASSETS = ["/", "/resep", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 // Install: Cache aset statis dasar
@@ -6,7 +6,7 @@ self.addEventListener("install", (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
-  self.skipWaiting(); // Paksa service worker baru langsung aktif
+  // Jangan skipWaiting otomatis — tunggu user konfirmasi update
 });
 
 // Activate: Hapus cache lama
@@ -20,7 +20,14 @@ self.addEventListener("activate", (e) => {
       )
     )
   );
-  self.clients.claim(); // Langsung ambil kendali klien tanpa reload
+  self.clients.claim();
+});
+
+// Terima pesan dari halaman (misal: konfirmasi update)
+self.addEventListener("message", (e) => {
+  if (e.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Fetch: Strategi Network First untuk navigasi, Stale-While-Revalidate untuk aset

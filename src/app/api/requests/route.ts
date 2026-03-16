@@ -1,41 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession, getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
 import { sendRequestNotification } from "@/lib/email";
 import { getMemberRecipeRequestStatus } from "@/lib/member-request";
 import { deductMemberCredit, recordCreditUsage } from "@/lib/member-credits";
+import { validateOrThrow, recipeRequestSchema } from "@/lib/validation";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { logger, apiError } from "@/lib/logger";
 
 const COLLECTION = "recipe_requests";
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 requests per 10 minutes per IP
+  const ip = getClientIp(request);
+  const rl = rateLimit(`recipe-request:${ip}`, { limit: 5, windowSec: 10 * 60 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Terlalu banyak request. Coba lagi sebentar." },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = await request.json();
-    const { name, recipeName, message } = body;
+    const { name, recipeName, message } = validateOrThrow(recipeRequestSchema, body);
 
-    if (!name?.trim() || !recipeName?.trim()) {
-      return NextResponse.json({ error: "Nama dan nama resep wajib diisi" }, { status: 400 });
-    }
-
-    let memberSession = await getMemberSession();
-    if (!memberSession) {
-      const isAdmin = await getAdminSession();
-      if (isAdmin) {
-        memberSession = {
-          id: "admin",
-          name: "Admin",
-          email: "admin@dapurardya.com",
-          credits: 999
-        };
-      }
-    }
-
-    if (!memberSession) {
+    const session = await getSession();
+    if (!session) {
       return NextResponse.json(
         { error: "Silakan masuk sebagai member untuk mengirim request resep", code: "MEMBER_REQUIRED" },
         { status: 401 }
       );
     }
+
+    const memberSession = {
+      id: session.id,
+      name: session.name,
+      email: session.email,
+      credits: session.credits || (session.role === "admin" ? 999 : 0)
+    };
 
     const db = await getDb();
     const col = db.collection<RecipeRequestDoc>(COLLECTION);
@@ -86,7 +90,7 @@ export async function POST(request: NextRequest) {
       recipeName: doc.recipeName,
       message: doc.message,
       memberId: memberSession.id,
-    }).catch((err) => console.error("[EMAIL] Gagal kirim notifikasi:", err));
+    }).catch((err) => logger.error("Gagal kirim notifikasi email request", "EMAIL", err));
 
     const updatedRequestStatus = await getMemberRecipeRequestStatus(db, memberSession.id);
 
@@ -95,15 +99,16 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (e) {
-    console.error("[REQUEST] Error:", e);
-    return NextResponse.json({ error: "Gagal mengirim request" }, { status: 500 });
+    return apiError("REQUEST_POST", e, "Gagal mengirim request");
   }
 }
 
 // Admin: get all requests
 export async function GET() {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const db = await getDb();
@@ -111,7 +116,6 @@ export async function GET() {
     const list = await col.find({}).sort({ createdAt: -1 }).toArray();
     return NextResponse.json(list.map((r) => ({ ...r, _id: r._id?.toString() })));
   } catch (e) {
-    console.error("[REQUEST] Error:", e);
-    return NextResponse.json({ error: "Gagal mengambil data" }, { status: 500 });
+    return apiError("REQUEST_GET", e, "Gagal mengambil data");
   }
 }

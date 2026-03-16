@@ -1,46 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { revalidatePath } from "next/cache";
-import { getDb } from "@/lib/mongodb";
-import { setMemberSession } from "@/lib/auth";
-import type { MemberDoc } from "@/types/member";
+import { registerMember, setAuthCookie } from "@/lib/auth-v2";
+import { validateOrThrow, registerSchema } from "@/lib/validation";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
+  // Rate limit: 5 registrations per hour per IP
+  const ip = getClientIp(request);
+  const rl = rateLimit(`register:${ip}`, { limit: 5, windowSec: 60 * 60 });
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Terlalu banyak percobaan pendaftaran. Coba lagi dalam 1 jam." },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.resetAt - Date.now()) / 1000)) } }
+    );
+  }
+
   try {
-    const { name, email, password } = await request.json();
-    if (!name?.trim() || !email?.trim() || !password?.trim()) {
-      return NextResponse.json({ error: "Semua field wajib diisi" }, { status: 400 });
-    }
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password minimal 6 karakter" }, { status: 400 });
-    }
+    const body = await request.json();
+    const { name, email, password } = validateOrThrow(registerSchema, body);
 
-    const db = await getDb();
-    const col = db.collection<MemberDoc>("members");
-    const existing = await col.findOne({ email: email.toLowerCase().trim() });
-    if (existing) {
-      return NextResponse.json({ error: "Email sudah terdaftar" }, { status: 400 });
-    }
+    const session = await registerMember(name, email, password);
+    await setAuthCookie(session);
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const result = await col.insertOne({
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      credits: 3,
-      passwordHash,
-      createdAt: new Date(),
-    } as MemberDoc);
-
-    await setMemberSession({
-      id: result.insertedId.toString(),
-      name: name.trim(),
-      email: email.toLowerCase().trim(),
-      credits: 3,
+    return NextResponse.json({
+      success: true,
+      redirectTo: "/member",
     });
-    revalidatePath("/member");
-    return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error("[REGISTER]", e);
-    return NextResponse.json({ error: "Gagal mendaftar" }, { status: 500 });
+  } catch (e: any) {
+    logger.error("Register gagal", "MEMBER_REGISTER", e);
+    return NextResponse.json({ error: e.message || "Gagal mendaftar" }, { status: 400 });
   }
 }

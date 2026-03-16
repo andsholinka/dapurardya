@@ -15,7 +15,7 @@ import {
   Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 
 import { TopUpPlans } from "@/components/TopUpPlans";
 
@@ -49,7 +49,7 @@ const faqs = [
 ];
 
 export default async function MemberUpgradePage() {
-  const session = await getMemberSession();
+  const session = await getSession();
 
   return (
     <div className="relative overflow-hidden">

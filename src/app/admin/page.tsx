@@ -3,7 +3,7 @@ import { getDb } from "@/lib/mongodb";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { buttonVariants } from "@/lib/button-variants";
 import { AdminRecipeCard } from "@/components/AdminRecipeCard";
-import { AdminAnalytics } from "@/components/AdminAnalytics";
+import { AdminAnalytics } from "@/components/AdminAnalyticsLazy";
 import { cn } from "@/lib/utils";
 
 async function getAllRecipes(): Promise<(Recipe & { _id?: string })[]> {

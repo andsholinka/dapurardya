@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
+import type { Metadata } from "next";
 import { buttonVariants } from "@/lib/button-variants";
 import { getDb } from "@/lib/mongodb";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { cn } from "@/lib/utils";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { RecipeCard } from "@/components/RecipeCard";
@@ -10,19 +11,25 @@ import { RequestModal } from "@/components/RequestModal";
 
 const COLLECTION = "recipes";
 
+export const metadata: Metadata = {
+  title: "Dapur Ardya – Resep Masakan Mudah & Enak",
+  description: "Kumpulan resep masakan yang mudah diikuti dan enak. Gratis untuk semua. Temukan resep favoritmu di Dapur Ardya.",
+  openGraph: {
+    title: "Dapur Ardya – Resep Masakan Mudah & Enak",
+    description: "Kumpulan resep masakan yang mudah diikuti dan enak. Gratis untuk semua.",
+    type: "website",
+  },
+};
+
+
 async function getFeaturedRecipes(): Promise<(Recipe & { _id?: string })[]> {
   try {
     const db = await getDb();
     const col = db.collection<RecipeDoc>(COLLECTION);
-    const recipes = await col
-      .find({ published: true })
-      .sort({ updatedAt: -1 })
-      .limit(6)
-      .toArray();
+    const recipes = await col.find({ published: true }).sort({ updatedAt: -1 }).limit(6).toArray();
 
     if (recipes.length === 0) return [];
 
-    // Join rating dari koleksi recipe_ratings
     const ids = recipes.map((r) => r._id!.toString());
     const ratings = await db.collection("recipe_ratings").aggregate([
       { $match: { recipeId: { $in: ids } } },
@@ -34,22 +41,18 @@ async function getFeaturedRecipes(): Promise<(Recipe & { _id?: string })[]> {
     return recipes.map((r) => {
       const rid = r._id?.toString();
       const rdata = rid ? ratingMap.get(rid) : undefined;
-      return {
-        ...r,
-        _id: rid,
-        avgRating: rdata?.avg ?? 0,
-        ratingCount: rdata?.count ?? 0,
-      };
+      return { ...r, _id: rid, avgRating: rdata?.avg ?? 0, ratingCount: rdata?.count ?? 0 };
     });
-  } catch (e) {
-    console.error("[GET_FEATURE_RECIPES]", e);
+  } catch {
     return [];
   }
 }
 
 export default async function HomePage() {
-  const [recipes, member] = await Promise.all([getFeaturedRecipes(), getMemberSession()]);
-  const isMember = !!member;
+  const [recipes, session] = await Promise.all([getFeaturedRecipes(), getSession()]);
+  const isMember = !!session;
+  const member = session;
+
 
   return (
     <div className="container max-w-4xl mx-auto px-4 py-6 pb-12">

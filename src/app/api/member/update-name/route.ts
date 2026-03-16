@@ -1,19 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getMemberSession, setMemberSession } from "@/lib/auth";
+import { getSession, setAuthCookie } from "@/lib/auth-v2";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { apiError } from "@/lib/logger";
 import { revalidatePath } from "next/cache";
 import { ObjectId } from "mongodb";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getMemberSession();
+    const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "Sesi tidak valid" }, { status: 401 });
     }
 
-    const { name } = await request.json();
-    if (!name?.trim()) {
-      return NextResponse.json({ error: "Nama tidak boleh kosong" }, { status: 400 });
+    // Rate limit: 10 name changes per hour per user
+    const rl = rateLimit(`update-name:${session.id}`, { limit: 10, windowSec: 60 * 60 });
+    if (!rl.allowed) {
+      return NextResponse.json({ error: "Terlalu sering mengubah nama." }, { status: 429 });
+    }
+
+    const body = await request.json();
+    const name = typeof body?.name === "string" ? body.name.trim() : "";
+    if (!name || name.length < 2 || name.length > 100) {
+      return NextResponse.json({ error: "Nama harus antara 2-100 karakter" }, { status: 400 });
     }
 
     const db = await getDb();
@@ -30,23 +39,16 @@ export async function POST(request: NextRequest) {
 
     await col.updateOne(
       query,
-      { $set: { name: name.trim(), updatedAt: new Date() } }
+      { $set: { name: name, updatedAt: new Date() } }
     );
 
-    // Update session cookie if it's a cookie-based session
-    // For NextAuth, we can't easily update the session from here, 
-    // but the modified getMemberSession (which I'll do next) will handle it.
-    
-    // We update the cookie-based session anyway if it exists
-    const updatedSession = { ...session, name: name.trim() };
-    await setMemberSession(updatedSession);
+    // Update session cookie with new name
+    const updatedSession = { ...session, name: name };
+    await setAuthCookie(updatedSession);
 
     revalidatePath("/");
     revalidatePath("/member");
 
-    return NextResponse.json({ success: true, name: name.trim() });
-  } catch (e) {
-    console.error("[UPDATE_NAME]", e);
-    return NextResponse.json({ error: "Gagal memperbarui nama" }, { status: 500 });
-  }
+    return NextResponse.json({ success: true, name: name });
+  } catch (e) { return apiError("UPDATE_NAME", e, "Gagal memperbarui nama"); }
 }

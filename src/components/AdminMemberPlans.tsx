@@ -13,7 +13,7 @@ export interface AdminMemberSummary {
   createdAt: string | null;
 }
 
-export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemberSummary[] }) {
+export function AdminMemberPlans({ initialMembers, total }: { initialMembers: AdminMemberSummary[]; total?: number }) {
   const { setIsLoading } = useGlobalLoading();
   const [members, setMembers] = useState<AdminMemberSummary[]>(initialMembers);
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -24,7 +24,7 @@ export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemb
     const nextCredits = parseInt(creditInputs[memberId] || "0");
     if (isNaN(nextCredits)) return;
 
-    setIsLoading(true);
+    setIsLoading(true, { title: "Memperbarui credits", subtitle: "Menyimpan perubahan kredit member..." });
     setSavingId(memberId);
     setFeedback("");
 
@@ -69,7 +69,7 @@ export function AdminMemberPlans({ initialMembers }: { initialMembers: AdminMemb
         </div>
         <div className="rounded-2xl border border-primary/15 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
           <p>
-            Total member dipantau: <span className="font-semibold text-foreground">{members.length}</span>
+            Total member dipantau: <span className="font-semibold text-foreground">{total ?? members.length}</span>
           </p>
         </div>
       </div>

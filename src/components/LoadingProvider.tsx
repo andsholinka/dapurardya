@@ -1,61 +1,54 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { ChefHat, UtensilsCrossed, Soup, Loader2 } from "lucide-react";
+import { ChefHat } from "lucide-react";
+
+interface LoadingState {
+  title: string;
+  subtitle: string;
+}
 
 interface LoadingContextType {
-  setIsLoading: (loading: boolean) => void;
+  setIsLoading: (loading: boolean, state?: Partial<LoadingState>) => void;
 }
+
+const DEFAULT_STATE: LoadingState = {
+  title: "Dapur Ardya",
+  subtitle: "Menyiapkan inspirasi masakan untukmu...",
+};
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 
 export function LoadingProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [loadingState, setLoadingState] = useState<LoadingState | null>(null);
 
-  // Prevent scroll when loading
   useEffect(() => {
-    if (isLoading) {
-      document.body.style.overflow = "hidden";
+    document.body.style.overflow = loadingState ? "hidden" : "unset";
+  }, [loadingState]);
+
+  function setIsLoading(loading: boolean, state?: Partial<LoadingState>) {
+    if (loading) {
+      setLoadingState({ ...DEFAULT_STATE, ...state });
     } else {
-      document.body.style.overflow = "unset";
+      setLoadingState(null);
     }
-  }, [isLoading]);
+  }
 
   return (
     <LoadingContext.Provider value={{ setIsLoading }}>
       {children}
-      {isLoading && (
+      {loadingState && (
         <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background/80 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-4">
             <div className="relative flex items-center justify-center">
-              {/* Outer Glow */}
-              <div className="absolute inset-0 size-24 bg-primary/20 rounded-full blur-2xl animate-pulse" />
-              
-              {/* Spinning Ring */}
-              <div className="size-20 rounded-full border-4 border-dashed border-primary/30 animate-[spin_4s_linear_infinite]" />
-              
-              {/* Content Icons */}
-              <div className="absolute flex items-center justify-center">
-                <div className="relative size-12 flex items-center justify-center">
-                   <div className="absolute inset-0 animate-[bounce_2s_ease-in-out_infinite]">
-                      <ChefHat className="size-12 text-primary" />
-                   </div>
-                   <UtensilsCrossed className="absolute -right-8 -top-2 size-6 text-primary/40 animate-[pulse_1.5s_ease-in-out_infinite]" />
-                   <Soup className="absolute -left-8 -bottom-2 size-6 text-primary/40 animate-[pulse_1.5s_ease-in-out_infinite_delay-300ms]" />
-                </div>
+              <div className="size-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <div className="absolute size-9 rounded-full bg-background flex items-center justify-center">
+                <ChefHat className="size-5 text-primary" />
               </div>
             </div>
-
-            <div className="text-center space-y-2">
-              <p className="text-xl font-black tracking-tight text-foreground">Chef AI sedang beraksi</p>
-              <div className="flex items-center justify-center gap-2">
-                <p className="text-sm text-muted-foreground">Menyiapkan inspirasi dapur...</p>
-                <div className="flex gap-1">
-                  <div className="size-1.5 rounded-full bg-primary animate-bounce" />
-                  <div className="size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.2s]" />
-                  <div className="size-1.5 rounded-full bg-primary animate-bounce [animation-delay:0.4s]" />
-                </div>
-              </div>
+            <div className="text-center space-y-1.5">
+              <p className="text-xl font-bold text-foreground">{loadingState.title}</p>
+              <p className="text-sm text-muted-foreground animate-pulse">{loadingState.subtitle}</p>
             </div>
           </div>
         </div>

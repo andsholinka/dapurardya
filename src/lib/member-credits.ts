@@ -9,13 +9,13 @@ export async function getMemberCredits(db: Db, memberId: string): Promise<number
   return member?.credits ?? 0;
 }
 
-export async function deductMemberCredit(db: Db, memberId: string): Promise<boolean> {
+export async function deductMemberCredits(db: Db, memberId: string, amount: number): Promise<boolean> {
   const id = tryConvertObjectId(memberId);
   if (!id) return false;
 
   const result = await db.collection("members").updateOne(
-    { _id: id, credits: { $gt: 0 } },
-    { $inc: { credits: -1 } }
+    { _id: id, credits: { $gte: amount } },
+    { $inc: { credits: -amount } }
   );
 
   return result.modifiedCount > 0;
@@ -24,7 +24,7 @@ export async function recordCreditUsage(
   db: Db,
   memberId: string,
   payload: {
-    action: "ai_suggest" | "recipe_request" | "admin_adjustment";
+    action: "ai_suggest" | "recipe_request" | "admin_adjustment" | "icon_generate";
     amount: number;
     description?: string;
     metadata?: any;

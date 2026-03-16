@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { apiError } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,8 +20,5 @@ export async function POST(req: NextRequest) {
     );
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[PUSH_SUBSCRIBE_ERROR]", error);
-    return NextResponse.json({ error: "Gagal menyimpan subscription" }, { status: 500 });
-  }
+  } catch (error) { return apiError("PUSH_SUBSCRIBE", error, "Gagal menyimpan subscription"); }
 }

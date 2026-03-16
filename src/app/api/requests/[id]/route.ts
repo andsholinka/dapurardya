@@ -1,16 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { requireAdmin } from "@/lib/auth-v2";
 import { ObjectId } from "mongodb";
 import type { RecipeRequestDoc } from "@/types/recipe-request";
 import { sendRequestDoneNotification } from "@/lib/email";
+import { logger, apiError } from "@/lib/logger";
 
 const COLLECTION = "recipe_requests";
 
 // Admin: mark as done / delete
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdmin();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { id } = await params;
   try {
@@ -29,19 +33,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         memberName: existing.name,
         recipeName: existing.recipeName,
         message: existing.message,
-      }).catch((err) => console.error("[EMAIL] Gagal kirim notifikasi done:", err));
+      }).catch((err) => logger.error("Gagal kirim notifikasi email done", "EMAIL", err));
     }
 
     return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error("[REQUEST PATCH] Error:", e);
-    return NextResponse.json({ error: "Gagal update" }, { status: 500 });
-  }
+  } catch (e) { return apiError("REQUEST_PATCH", e, "Gagal update"); }
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    await requireAdmin();
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const { id } = await params;
   try {
@@ -49,8 +53,5 @@ export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id:
     const col = db.collection<RecipeRequestDoc>(COLLECTION);
     await col.deleteOne({ _id: new ObjectId(id) });
     return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error("[REQUEST DELETE] Error:", e);
-    return NextResponse.json({ error: "Gagal hapus" }, { status: 500 });
-  }
+  } catch (e) { return apiError("REQUEST_DELETE", e, "Gagal hapus"); }
 }

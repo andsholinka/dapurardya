@@ -13,20 +13,27 @@ export function NotificationManager() {
 
   useEffect(() => {
     async function checkStatus() {
-      if (typeof window !== "undefined") {
-        const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
-        setIsSupported(supported);
-        if (supported) {
-          try {
-            // Race condition check or hang check
-            const subPromise = getSubscription();
-            const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
-            const sub = await Promise.race([subPromise, timeoutPromise]) as any;
-            setIsSubscribed(!!sub);
-          } catch (e) {
-            console.warn("[NOTIF] Gagal mengecek status subscription (mungkin sedang loading):", e);
-            setIsSubscribed(false);
-          }
+      if (typeof window === "undefined") { setChecking(false); return; }
+
+      const supported = "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+      setIsSupported(supported);
+
+      if (supported) {
+        // Kalau permission sudah denied atau default (belum pernah diminta), cek dulu
+        // Kalau denied, sembunyikan tombol — tidak ada gunanya
+        if (Notification.permission === "denied") {
+          setChecking(false);
+          return;
+        }
+
+        try {
+          const subPromise = getSubscription();
+          const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 2000));
+          const sub = await Promise.race([subPromise, timeoutPromise]) as any;
+          setIsSubscribed(!!sub);
+        } catch (e) {
+          console.warn("[NOTIF] Gagal mengecek status subscription:", e);
+          setIsSubscribed(false);
         }
       }
       setChecking(false);
@@ -37,7 +44,10 @@ export function NotificationManager() {
   async function handleSubscribe() {
     setLoading(true);
     try {
-      const granted = await subscribeUser();
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Timeout")), 10_000)
+      );
+      const granted = await Promise.race([subscribeUser(), timeoutPromise]);
       if (granted) setIsSubscribed(true);
     } catch (error) {
       console.error("Failed to subscribe:", error);
@@ -46,8 +56,8 @@ export function NotificationManager() {
     }
   }
 
-  // Sembunyikan jika tidak didukung, sedang mengecek, atau SUDAH ter-subscribe
-  if (!isSupported || checking || isSubscribed) return null;
+  // Sembunyikan jika tidak didukung, sedang mengecek, sudah subscribe, atau permission denied
+  if (!isSupported || checking || isSubscribed || (typeof window !== "undefined" && typeof Notification !== "undefined" && Notification.permission === "denied")) return null;
 
   return (
     <div className="fixed bottom-4 left-4 z-50">

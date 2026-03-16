@@ -1,38 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { revalidatePath } from "next/cache";
-import { getDb } from "@/lib/mongodb";
-import { setMemberSession } from "@/lib/auth";
-import type { MemberDoc } from "@/types/member";
+import { verifyMemberLogin, setAuthCookie } from "@/lib/auth-v2";
+import { validateOrThrow, loginSchema } from "@/lib/validation";
+import { logger } from "@/lib/logger";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
-    if (!email?.trim() || !password?.trim()) {
-      return NextResponse.json({ error: "Email dan password wajib diisi" }, { status: 400 });
-    }
+    const body = await request.json();
+    const { email, password } = validateOrThrow(loginSchema, body);
 
-    const db = await getDb();
-    const member = await db.collection<MemberDoc>("members").findOne({ email: email.toLowerCase().trim() });
-    if (!member) {
+    const session = await verifyMemberLogin(email, password);
+
+    if (!session) {
       return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
     }
 
-    const valid = await bcrypt.compare(password, member.passwordHash);
-    if (!valid) {
-      return NextResponse.json({ error: "Email atau password salah" }, { status: 401 });
-    }
+    await setAuthCookie(session);
 
-    await setMemberSession({
-      id: member._id!.toString(),
-      name: member.name,
-      email: member.email,
-      credits: member.credits || 0,
+    return NextResponse.json({
+      success: true,
+      redirectTo: "/member",
     });
-    revalidatePath("/member");
-    return NextResponse.json({ success: true });
-  } catch (e) {
-    console.error("[MEMBER LOGIN]", e);
-    return NextResponse.json({ error: "Gagal login" }, { status: 500 });
+  } catch (e: any) {
+    logger.error("Member login gagal", "MEMBER_LOGIN", e);
+    return NextResponse.json({ error: e.message || "Gagal login" }, { status: 400 });
   }
 }

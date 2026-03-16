@@ -72,7 +72,7 @@ export function TopUpPlans({ memberEmail }: { memberEmail?: string }) {
     }
 
     setLoadingId(planId);
-    setIsLoading(true);
+    setIsLoading(true, { title: "Menyiapkan pembayaran", subtitle: "Menghubungkan ke halaman checkout..." });
 
     try {
       const res = await fetch("/api/payment/checkout", {

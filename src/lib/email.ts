@@ -1,10 +1,34 @@
 import { Resend } from "resend";
+import { logger } from "@/lib/logger";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL!;
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "Dapur Ardya <noreply@dapurardya.my.id>";
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.my.id";
+
+// Retry wrapper untuk Resend — coba 3x dengan exponential backoff
+async function sendWithRetry(
+  payload: Parameters<typeof resend.emails.send>[0],
+  maxRetries = 3
+): Promise<void> {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const { error } = await resend.emails.send(payload);
+      if (error) throw new Error(error.message);
+      return;
+    } catch (err) {
+      const isLast = attempt === maxRetries;
+      logger.warn(
+        `Email send attempt ${attempt}/${maxRetries} failed${isLast ? " — giving up" : ", retrying..."}`,
+        "EMAIL",
+        { to: payload.to, subject: payload.subject, error: err instanceof Error ? err.message : String(err) }
+      );
+      if (isLast) throw err;
+      await new Promise((r) => setTimeout(r, 500 * Math.pow(2, attempt - 1))); // 500ms, 1s, 2s
+    }
+  }
+}
 
 export interface RequestNotificationData {
   name: string;
@@ -15,13 +39,14 @@ export interface RequestNotificationData {
 
 export async function sendRequestNotification(data: RequestNotificationData) {
   if (!process.env.RESEND_API_KEY || !ADMIN_EMAIL) {
-    console.warn("[EMAIL] RESEND_API_KEY atau ADMIN_EMAIL belum diset, skip kirim email.");
+    logger.warn("RESEND_API_KEY atau ADMIN_EMAIL belum diset, skip kirim email", "EMAIL");
     return;
   }
 
   const { name, recipeName, message, memberId } = data;
 
-  await resend.emails.send({
+  try {
+    await sendWithRetry({
     from: FROM_EMAIL,
     to: ADMIN_EMAIL,
     subject: `🍳 Request Resep Baru: ${recipeName}`,
@@ -107,7 +132,12 @@ export async function sendRequestNotification(data: RequestNotificationData) {
       </body>
       </html>
     `,
-  });
+    });
+    logger.info(`Email request notification sent to ${ADMIN_EMAIL}`, "EMAIL");
+  } catch (err) {
+    logger.error("Gagal kirim email notifikasi request", "EMAIL", err);
+    // Non-fatal — request tetap tersimpan meski email gagal
+  }
 }
 
 export interface RequestDoneNotificationData {
@@ -119,16 +149,17 @@ export interface RequestDoneNotificationData {
 
 export async function sendRequestDoneNotification(data: RequestDoneNotificationData) {
   if (!process.env.RESEND_API_KEY) {
-    console.warn("[EMAIL] RESEND_API_KEY belum diset, skip kirim email.");
+    logger.warn("RESEND_API_KEY belum diset, skip kirim email", "EMAIL");
     return;
   }
 
   const { memberEmail, memberName, recipeName, message } = data;
 
-  await resend.emails.send({
-    from: FROM_EMAIL,
-    to: memberEmail,
-    subject: `🎉 Resep "${recipeName}" sudah tersedia di Dapur Ardya!`,
+  try {
+    await sendWithRetry({
+      from: FROM_EMAIL,
+      to: memberEmail,
+      subject: `🎉 Resep "${recipeName}" sudah tersedia di Dapur Ardya!`,
     html: `
       <!DOCTYPE html>
       <html lang="id">
@@ -205,5 +236,9 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
       </body>
       </html>
     `,
-  });
+    });
+    logger.info(`Email request done sent to ${memberEmail}`, "EMAIL");
+  } catch (err) {
+    logger.error("Gagal kirim email notifikasi request done", "EMAIL", err);
+  }
 }

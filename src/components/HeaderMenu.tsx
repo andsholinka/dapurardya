@@ -3,15 +3,14 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signOut } from "next-auth/react";
-import type { MemberSession } from "@/lib/auth";
+import type { AuthSession } from "@/lib/auth-v2";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
 import { ChevronDown, User, Bell, BellOff, Loader2, Coins } from "lucide-react";
 import { subscribeUser, unsubscribeUser, getSubscription } from "@/lib/notifications";
 import { useGlobalLoading } from "./LoadingProvider";
 
-export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession | null; isAdmin?: boolean }) {
+export function HeaderMenu({ member, isAdmin = false }: { member: AuthSession | null; isAdmin?: boolean }) {
   const router = useRouter();
   const { setIsLoading } = useGlobalLoading();
   const [open, setOpen] = useState(false);
@@ -70,21 +69,32 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
   }
 
   async function logout() {
-    setIsLoading(true);
+    setIsLoading(true, { title: "Sampai jumpa!", subtitle: "Sedang keluar dari akun..." });
     try {
       if (isAdmin) {
         await fetch("/api/auth/logout", { method: "POST" });
-        setOpen(false);
-        router.push("/");
-        router.refresh();
       } else {
         await fetch("/api/member/logout", { method: "POST" });
-        await signOut({ callbackUrl: "/" });
       }
+      setOpen(false);
+      router.push("/");
+      router.refresh();
     } finally {
       setIsLoading(false);
     }
   }
+
+  // Credit Display — listens for "credits:update" custom event
+  const [displayCredits, setDisplayCredits] = useState<number>(member?.credits ?? 0);
+
+  useEffect(() => {
+    function handler(e: Event) {
+      const detail = (e as CustomEvent<{ credits: number }>).detail;
+      if (typeof detail?.credits === "number") setDisplayCredits(detail.credits);
+    }
+    window.addEventListener("credits:update", handler);
+    return () => window.removeEventListener("credits:update", handler);
+  }, []);
 
   // Edit Nama State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -94,7 +104,7 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
 
   async function handleUpdateName(e: React.FormEvent) {
     e.preventDefault();
-    setIsLoading(true);
+    setIsLoading(true, { title: "Menyimpan profil", subtitle: "Memperbarui nama tampilan kamu..." });
     setSavingName(true);
     setEditError("");
     try {
@@ -170,7 +180,7 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
             <Coins className="size-3 sm:size-3.5" />
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-sm font-bold text-foreground leading-none">{member.credits}</span>
+            <span className="text-sm font-bold text-foreground leading-none">{displayCredits}</span>
             <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight hidden sm:inline">Credits</span>
           </div>
         </div>
@@ -187,10 +197,20 @@ export function HeaderMenu({ member, isAdmin = false }: { member: MemberSession 
         </button>
         {open && (
           <div className="absolute right-0 top-full mt-2 w-44 bg-background border-2 rounded-xl shadow-lg overflow-hidden z-50">
+            {/* Nama & Email */}
+            <div className="px-4 py-3 border-b">
+              <p className="text-sm font-semibold truncate">{member.name}</p>
+              <p className="text-xs text-muted-foreground truncate">{member.email}</p>
+            </div>
             {isAdmin ? (
-              <Link href="/admin" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
-                Dashboard Admin
-              </Link>
+              <>
+                <Link href="/admin" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
+                  Dashboard Admin
+                </Link>
+                <Link href="/member/icon-studio" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t" onClick={() => setOpen(false)}>
+                  Icon Studio
+                </Link>
+              </>
             ) : (
               <>
                 <Link href="/member" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>

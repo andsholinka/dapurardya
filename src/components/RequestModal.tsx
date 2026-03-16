@@ -68,9 +68,7 @@ export function RequestModal({ memberId, memberName, size, className }: RequestM
       return;
     }
 
-    setIsLoading(true);
-    setLoading(true);
-    setError("");
+    setIsLoading(true, { title: "Mengirim request", subtitle: "Menyampaikan permintaan resepmu ke Ardya..." });
 
     try {
       const res = await fetch("/api/requests", {

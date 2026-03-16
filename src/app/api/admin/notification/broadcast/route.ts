@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import webpush from "web-push";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
+import { apiError } from "@/lib/logger";
 
 webpush.setVapidDetails(
   "mailto:admin@dapurardya.com",
@@ -11,8 +12,10 @@ webpush.setVapidDetails(
 
 export async function POST(req: NextRequest) {
   try {
-    const isAdmin = await getAdminSession();
-    if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session || session.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const { title, body, url } = await req.json();
 
@@ -45,8 +48,5 @@ export async function POST(req: NextRequest) {
       sentCount: subscriptions.length - failures.length,
       failureCount: failures.length,
     });
-  } catch (error) {
-    console.error("[PUSH_BROADCAST_ERROR]", error);
-    return NextResponse.json({ error: "Gagal mengirim notifikasi" }, { status: 500 });
-  }
+  } catch (error) { return apiError("PUSH_BROADCAST", error, "Gagal mengirim notifikasi"); }
 }

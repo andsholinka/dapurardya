@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { clearAdminSession } from "@/lib/auth";
+import { clearAuthCookie } from "@/lib/auth-v2";
+import { apiError } from "@/lib/logger";
 
 export async function POST() {
-  await clearAdminSession();
-  return NextResponse.json({ success: true });
+  try {
+    await clearAuthCookie();
+    return NextResponse.json({ success: true });
+  } catch (e) { return apiError("AUTH_LOGOUT", e, "Gagal logout"); }
 }

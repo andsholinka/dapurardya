@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getMemberSession, getAdminSession } from "@/lib/auth";
+import { getSession, isMember } from "@/lib/auth-v2";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { apiError } from "@/lib/logger";
 
 const COLLECTION = "recipe_ratings";
 
@@ -31,19 +33,14 @@ export async function GET(
 
     // 3. Cari ulasan milik user yang sedang login
     let userReview: any = null;
-    const member = await getMemberSession();
-    if (member) {
-      userReview = reviews.find(r => r.memberId === member.id) || null;
-    } else {
-      const admin = await getAdminSession();
-      if (admin) userReview = reviews.find(r => r.memberId === "admin") || null;
+    const session = await getSession();
+    if (session) {
+      const memberId = session.role === "admin" ? "admin" : session.id;
+      userReview = reviews.find(r => r.memberId === memberId) || null;
     }
 
     return NextResponse.json({ avg, count, userReview, reviews });
-  } catch (e) {
-    console.error("[REVIEW GET]", e);
-    return NextResponse.json({ error: "Gagal mengambil ulasan" }, { status: 500 });
-  }
+  } catch (e) { return apiError("RATING_GET", e, "Gagal mengambil ulasan"); }
 }
 
 // POST — submit atau update ulasan { rating: 1-5, comment?, image? }
@@ -51,21 +48,25 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ recipeId: string }> }
 ) {
-  const member = await getMemberSession();
-  const isAdmin = await getAdminSession();
-  if (!member && !isAdmin) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: "Login dulu untuk memberi ulasan" }, { status: 401 });
   }
 
   const { recipeId } = await params;
-  const { rating, comment, image } = await req.json();
+  const body = await req.json();
+  const { rating, comment, image } = body;
 
-  if (!rating || rating < 1 || rating > 5) {
+  if (!rating || typeof rating !== "number" || rating < 1 || rating > 5) {
     return NextResponse.json({ error: "Rating harus antara 1-5" }, { status: 400 });
   }
 
-  const memberId = member?.id ?? "admin";
-  const memberName = member?.name ?? "Admin";
+  // Sanitize string inputs
+  const safeComment = typeof comment === "string" ? comment.trim().slice(0, 500) : "";
+  const safeImage = typeof image === "string" ? image.slice(0, 500) : "";
+
+  const memberId = session.role === "admin" ? "admin" : session.id;
+  const memberName = session.name;
 
   try {
     const db = await getDb();
@@ -76,8 +77,8 @@ export async function POST(
       memberId,
       memberName,
       rating,
-      comment: comment?.trim() || "",
-      image: image || "",
+      comment: safeComment,
+      image: safeImage,
       updatedAt: new Date(),
     };
 
@@ -97,8 +98,5 @@ export async function POST(
     const count = agg[0]?.count ?? 0;
 
     return NextResponse.json({ avg, count, userReview: updateData });
-  } catch (e) {
-    console.error("[REVIEW POST]", e);
-    return NextResponse.json({ error: "Gagal menyimpan ulasan" }, { status: 500 });
-  }
+  } catch (e) { return apiError("RATING_POST", e, "Gagal menyimpan ulasan"); }
 }

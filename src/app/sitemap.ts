@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { getDb } from "@/lib/mongodb";
 import type { RecipeDoc } from "@/types/recipe";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.my.id";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [

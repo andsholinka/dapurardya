@@ -1,36 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { getDb } from "@/lib/mongodb";
 import { getRecipeSuggestions } from "@/lib/gemini";
 import { getMemberAIUsageStatus } from "@/lib/member-ai";
 import { getFallbackRecipeSuggestions } from "@/lib/recipe-suggestion-fallback";
-import { deductMemberCredit, recordCreditUsage } from "@/lib/member-credits";
+import { deductMemberCredits, recordCreditUsage } from "@/lib/member-credits";
 import type { RecipeDoc } from "@/types/recipe";
+import { apiError } from "@/lib/logger";
+
+// Cache saran AI — key: hash bahan+resep, value: { suggestions, expiresAt }
+const aiCache = new Map<string, { suggestions: unknown[]; expiresAt: number }>();
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 menit
+
+function makeCacheKey(ingredients: string[], recipeSlugs: string[]): string {
+  const ing = [...ingredients].sort().join(",").toLowerCase();
+  const slugs = recipeSlugs.slice(0, 20).join(","); // pakai 20 slug pertama sebagai fingerprint
+  return `${ing}|${slugs}`;
+}
+
+function getCached(key: string): unknown[] | null {
+  const entry = aiCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) { aiCache.delete(key); return null; }
+  return entry.suggestions;
+}
+
+function setCache(key: string, suggestions: unknown[]) {
+  // Batasi ukuran cache agar tidak bocor memori
+  if (aiCache.size > 200) {
+    const firstKey = aiCache.keys().next().value;
+    if (firstKey) aiCache.delete(firstKey);
+  }
+  aiCache.set(key, { suggestions, expiresAt: Date.now() + CACHE_TTL_MS });
+}
 
 export async function POST(request: NextRequest) {
   try {
-    let member = await getMemberSession();
-    
-    // If not member, check admin
-    if (!member) {
-      const { getAdminSession } = await import("@/lib/auth");
-      const isAdmin = await getAdminSession();
-      if (isAdmin) {
-        member = {
-          id: "admin",
-          name: "Admin",
-          email: "admin@dapurardya.com",
-          credits: 999
-        };
-      }
-    }
-
-    if (!member) {
+    const session = await getSession();
+    if (!session) {
       return NextResponse.json(
         { error: "Fitur Chef AI hanya untuk member. Silakan masuk atau daftar dulu.", code: "MEMBER_REQUIRED" },
         { status: 401 }
       );
     }
+
+    const member = {
+      id: session.id,
+      name: session.name,
+      email: session.email,
+      credits: session.credits || (session.role === "admin" ? 999 : 0)
+    };
 
     const { ingredients } = await request.json();
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {
@@ -39,7 +58,7 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     const usageStatus = await getMemberAIUsageStatus(db, member.id);
-    if (!usageStatus.canUseAI) {
+    if (session.role !== "admin" && !usageStatus.canUseAI) {
       return NextResponse.json(
         {
           error: "Kamu tidak memiliki Credit yang cukup untuk menggunakan Chef AI. Silakan kumpulkan Credit atau Top Up paket Credits.",
@@ -60,43 +79,58 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ suggestions: [] });
     }
 
-    const aiSuggestions = await getRecipeSuggestions(ingredients, recipes);
-    const suggestions =
-      aiSuggestions.length > 0 ? aiSuggestions : getFallbackRecipeSuggestions(ingredients, recipes);
+    // Cek cache dulu sebelum panggil Gemini
+    const cacheKey = makeCacheKey(ingredients, recipes.map((r: any) => r.slug));
+    const cached = getCached(cacheKey);
 
-    if (member.id !== "admin") {
-      const deducted = await deductMemberCredit(db, member.id);
+    let result: unknown[];
+    let usedRealAI = false;
+    let fromCache = false;
+
+    if (cached) {
+      result = cached;
+      fromCache = true;
+      // Cache berasal dari AI sebelumnya — kredit sudah dipotong saat itu, jangan potong lagi
+    } else {
+      const aiSuggestions = await getRecipeSuggestions(ingredients, recipes);
+      usedRealAI = aiSuggestions.length > 0;
+
+      const suggestions =
+        aiSuggestions.length > 0 ? aiSuggestions : getFallbackRecipeSuggestions(ingredients, recipes);
+
+      // Kalau fallback juga kosong, tampilkan 3 resep terbaru sebagai default
+      const finalSuggestions = suggestions.length > 0
+        ? suggestions
+        : recipes.slice(0, 3).map((r: any) => ({
+            recipeSlug: r.slug,
+            matchScore: 0,
+            reason: "Resep pilihan dari Dapur Ardya yang mungkin kamu suka.",
+          }));
+
+      result = finalSuggestions.map((s: any) => {
+        const fullRecipe = recipes.find((r: any) => r.slug === s.recipeSlug);
+        if (!fullRecipe) return null;
+        return { ...fullRecipe, _id: fullRecipe._id.toString(), matchScore: s.matchScore, reason: s.reason };
+      }).filter(Boolean);
+
+      // Hanya cache kalau hasil dari AI (bukan fallback)
+      if (usedRealAI) setCache(cacheKey, result);
+    }
+
+    // Potong kredit HANYA kalau hasil dari AI sungguhan (bukan cache, bukan fallback)
+    if (member.id !== "admin" && usedRealAI && !fromCache) {
+      const deducted = await deductMemberCredits(db, member.id, 1);
       if (!deducted) {
-         return NextResponse.json({ error: "Gagal memproses Credit" }, { status: 500 });
+        return NextResponse.json({ error: "Gagal memproses Credit" }, { status: 500 });
       }
-
       await recordCreditUsage(db, member.id, {
         action: "ai_suggest",
         amount: 1,
         description: `Chef AI Suggestion with ${ingredients.length} ingredients`,
-        metadata: {
-          ingredientsCount: ingredients.length,
-          suggestionsCount: suggestions.length,
-        },
+        metadata: { ingredientsCount: ingredients.length, suggestionsCount: result.length },
       });
     }
     const updatedStatus = await getMemberAIUsageStatus(db, member.id);
-
-    // Gabungkan data resep lengkap dengan saran AI
-    const result = suggestions.map((s: any) => {
-      const fullRecipe = recipes.find(r => r.slug === s.recipeSlug);
-      if (!fullRecipe) return null;
-      return {
-        ...fullRecipe,
-        _id: fullRecipe._id.toString(),
-        matchScore: s.matchScore,
-        reason: s.reason
-      };
-    }).filter(Boolean);
-
-    return NextResponse.json({ suggestions: result, aiStatus: updatedStatus });
-  } catch (error) {
-    console.error("[AI_SUGGEST_API]", error);
-    return NextResponse.json({ error: "Terjadi kesalahan pada AI" }, { status: 500 });
-  }
+    return NextResponse.json({ suggestions: result, aiStatus: updatedStatus, fromAI: usedRealAI, fromCache });
+  } catch (error) { return apiError("AI_SUGGEST", error, "Terjadi kesalahan pada AI"); }
 }

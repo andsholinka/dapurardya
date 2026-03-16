@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { getDb } from "@/lib/mongodb";
+import { handleGoogleSignIn, setAuthCookie } from "@/lib/auth-v2";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -12,19 +12,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   secret: process.env.AUTH_SECRET,
   callbacks: {
     async signIn({ user }) {
-      // Simpan/update member di DB saat login Google
       try {
-        const db = await getDb();
-        await db.collection("members").updateOne(
-          { email: user.email },
-          {
-            $set: { name: user.name, email: user.email, image: user.image, updatedAt: new Date() },
-            $setOnInsert: { createdAt: new Date(), provider: "google", credits: 3 },
-          },
-          { upsert: true }
-        );
+        // Create JWT session for Google login
+        const session = await handleGoogleSignIn(user.email!, user.name!, user.image || undefined);
+        await setAuthCookie(session);
       } catch (e) {
         console.error("[NEXTAUTH] signIn error:", e);
+        return false;
       }
       return true;
     },

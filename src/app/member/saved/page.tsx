@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { getDb } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import type { RecipeDoc, Recipe } from "@/types/recipe";
@@ -30,7 +30,7 @@ async function getSavedRecipes(memberId: string): Promise<(Recipe & { _id: strin
 }
 
 export default async function SavedPage() {
-  const session = await getMemberSession();
+  const session = await getSession();
   if (!session) redirect("/member/auth?tab=login");
 
   const recipes = await getSavedRecipes(session.id);

@@ -11,12 +11,19 @@ export function urlBase64ToUint8Array(base64String: string) {
   return outputArray;
 }
 
+async function getServiceWorkerReady(timeoutMs = 5000): Promise<ServiceWorkerRegistration> {
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error("serviceWorker.ready timed out")), timeoutMs)
+  );
+  return Promise.race([navigator.serviceWorker.ready, timeout]);
+}
+
 export async function subscribeUser() {
   if (!VAPID_PUBLIC_KEY) {
     throw new Error("VAPID Public Key is not set");
   }
 
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await getServiceWorkerReady();
   const result = await Notification.requestPermission();
 
   if (result === "granted") {
@@ -37,7 +44,7 @@ export async function subscribeUser() {
 }
 
 export async function unsubscribeUser() {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await getServiceWorkerReady();
   const subscription = await registration.pushManager.getSubscription();
   
   if (subscription) {
@@ -63,6 +70,6 @@ export async function unsubscribeUser() {
 }
 
 export async function getSubscription() {
-  const registration = await navigator.serviceWorker.ready;
+  const registration = await getServiceWorkerReady();
   return registration.pushManager.getSubscription();
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminSession, getMemberSession } from "@/lib/auth";
+import { getSession, requireAdmin } from "@/lib/auth-v2";
 import { v2 as cloudinary } from "cloudinary";
+import { apiError } from "@/lib/logger";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -9,8 +10,8 @@ cloudinary.config({
 });
 
 export async function POST(request: NextRequest) {
-  const [isAdmin, member] = await Promise.all([getAdminSession(), getMemberSession()]);
-  if (!isAdmin && !member) {
+  const session = await getSession();
+  if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -33,8 +34,5 @@ export async function POST(request: NextRequest) {
       width: result.width,
       height: result.height,
     });
-  } catch (e) {
-    console.error("[UPLOAD] Error:", e);
-    return NextResponse.json({ error: "Gagal upload gambar" }, { status: 500 });
-  }
+  } catch (e) { return apiError("UPLOAD", e, "Gagal upload gambar"); }
 }

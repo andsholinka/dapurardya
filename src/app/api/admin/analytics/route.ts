@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
-import { getAdminSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
+import { apiError } from "@/lib/logger";
 
 export async function GET() {
-  const isAdmin = await getAdminSession();
-  if (!isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session || session.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const db = await getDb();
@@ -49,8 +52,5 @@ export async function GET() {
     }
 
     return NextResponse.json({ totalRecipes, totalMembers, totalRequests, pendingRequests, chartData });
-  } catch (e) {
-    console.error("[ANALYTICS]", e);
-    return NextResponse.json({ error: "Gagal mengambil data" }, { status: 500 });
-  }
+  } catch (e) { return apiError("ANALYTICS", e, "Gagal mengambil data"); }
 }

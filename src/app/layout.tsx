@@ -6,7 +6,6 @@ import { Header } from "@/components/Header";
 import { RegisterSW } from "@/components/RegisterSW";
 import { InstallPWA } from "@/components/InstallPWA";
 import { NotificationManager } from "@/components/NotificationManager";
-import { SessionProvider } from "@/components/SessionProvider";
 
 const quicksand = Quicksand({
   variable: "--font-sans",
@@ -15,7 +14,7 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.vercel.app"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.my.id"),
   title: {
     default: "Dapur Ardya – Resep Masakan",
     template: "%s – Dapur Ardya",
@@ -48,6 +47,8 @@ export const viewport: Viewport = {
 
 import { LoadingProvider } from "@/components/LoadingProvider";
 
+import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,8 +68,7 @@ export default function RootLayout({
           speed={200}
           shadow="0 0 10px #be185d,0 0 5px #be185d"
         />
-        <SessionProvider>
-          <LoadingProvider>
+        <LoadingProvider>
             <Header />
             <main className="flex-1 w-full">{children}</main>
             <footer className="border-t border-border/60 py-4 text-center text-xs text-muted-foreground">
@@ -79,9 +79,9 @@ export default function RootLayout({
             </footer>
             <RegisterSW />
             <InstallPWA />
+            <PWAUpdatePrompt />
             <NotificationManager />
           </LoadingProvider>
-        </SessionProvider>
       </body>
     </html>
   );

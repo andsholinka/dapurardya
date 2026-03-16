@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getDb } from "@/lib/mongodb";
-import { getMemberSession, getAdminSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { buttonVariants } from "@/lib/button-variants";
 import { cn } from "@/lib/utils";
@@ -79,15 +79,14 @@ export default async function RecipeDetailPage({ params }: PageProps) {
 
   // Cek akses member only
   if (recipe.memberOnly) {
-    const [member, isAdmin] = await Promise.all([getMemberSession(), getAdminSession()]);
-    if (!member && !isAdmin) {
+    const session = await getSession();
+    if (!session) {
       redirect(`/member/auth?tab=register`);
     }
   }
 
-  const member = await getMemberSession();
-  const isAdmin = await getAdminSession();
-  const isMember = !!(member || isAdmin);
+  const session = await getSession();
+  const isMember = !!session;
 
   // Ambil related recipes — sama kategori atau punya tag yang sama, exclude resep ini
   let relatedRecipes: (Recipe & { _id: string })[] = [];
@@ -108,9 +107,40 @@ export default async function RecipeDetailPage({ params }: PageProps) {
   } catch { /* silent */ }
 
   const recipeImages = normalizeRecipeGallery(recipe.gallery, recipe.images, recipe.image);
+  const primaryImage = recipeImages[0]?.url && !recipeImages[0].url.startsWith("data:") ? recipeImages[0].url : `${BASE_URL}/icon-512.png`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Recipe",
+    name: recipe.title,
+    description: recipe.description,
+    image: [primaryImage],
+    url: `${BASE_URL}/resep/${slug}`,
+    author: { "@type": "Organization", name: "Dapur Ardya" },
+    datePublished: recipe.createdAt ? new Date(recipe.createdAt).toISOString() : undefined,
+    dateModified: recipe.updatedAt ? new Date(recipe.updatedAt).toISOString() : undefined,
+    recipeCategory: recipe.category,
+    keywords: recipe.tags?.join(", "),
+    recipeYield: recipe.servings ? `${recipe.servings} porsi` : undefined,
+    prepTime: recipe.prepTimeMinutes ? `PT${recipe.prepTimeMinutes}M` : undefined,
+    cookTime: recipe.cookTimeMinutes ? `PT${recipe.cookTimeMinutes}M` : undefined,
+    totalTime: recipe.prepTimeMinutes && recipe.cookTimeMinutes
+      ? `PT${recipe.prepTimeMinutes + recipe.cookTimeMinutes}M`
+      : undefined,
+    recipeIngredient: recipe.ingredients,
+    recipeInstructions: recipe.steps.map((step, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text: step,
+    })),
+  };
 
   return (
     <div className="container max-w-2xl mx-auto px-4 py-6 pb-12">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <Link href="/resep" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mb-4 -ml-1 inline-block")}>
         ← Semua Resep
       </Link>

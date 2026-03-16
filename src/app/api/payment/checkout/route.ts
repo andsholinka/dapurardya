@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getMemberSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 import { createMayarPaymentLink } from "@/lib/mayar";
+import { validateOrThrow, checkoutSchema } from "@/lib/validation";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { apiError } from "@/lib/logger";
 
 const PACKAGES = {
   starter: { amount: 15000, credits: 10, name: "Starter Credits" },
@@ -9,41 +12,38 @@ const PACKAGES = {
 };
 
 export async function POST(req: NextRequest) {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 10 checkout attempts per hour per user
+  const ip = getClientIp(req);
+  const rl = rateLimit(`checkout:${session.id ?? ip}`, { limit: 10, windowSec: 60 * 60 });
+  if (!rl.allowed) {
+    return NextResponse.json({ error: "Terlalu banyak percobaan. Coba lagi nanti." }, { status: 429 });
+  }
+
   try {
-    const session = await getMemberSession();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { packageId, mobile } = await req.json();
-    const pkg = PACKAGES[packageId as keyof typeof PACKAGES];
-
-    if (!pkg) {
-      return NextResponse.json({ error: "Invalid package" }, { status: 400 });
-    }
+    const body = await req.json();
+    const { packageId, mobile } = validateOrThrow(checkoutSchema, body);
+    const pkg = PACKAGES[packageId];
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://dapurardya.my.id";
-    
-    // Create payment link
+
     const result = await createMayarPaymentLink({
       name: session.name,
       email: session.email,
       amount: pkg.amount,
-      mobile: mobile || "081234567890", // Mayar requires mobile
+      mobile: mobile || "081234567890",
       description: `Top Up ${pkg.credits} Credits - Dapur Ardya`,
       redirectURL: `${baseUrl}/member/upgrade/success`,
       expiredAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
     });
 
     const paymentLink = result.data?.[0]?.link || result.data?.link || result.link;
-
-    if (!paymentLink) {
-      throw new Error("Payment link not found in API response");
-    }
+    if (!paymentLink) throw new Error("Payment link not found in API response");
 
     return NextResponse.json({ url: paymentLink });
-  } catch (error: any) {
-    console.error("[PAYMENT_CHECKOUT]", error);
-    return NextResponse.json({ error: error.message || "Failed to initiate payment" }, { status: 500 });
-  }
+  } catch (e) { return apiError("PAYMENT_CHECKOUT", e, "Gagal membuat link pembayaran"); }
 }

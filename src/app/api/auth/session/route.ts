@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { getAdminSession } from "@/lib/auth";
+import { getSession } from "@/lib/auth-v2";
 
 export async function GET() {
-  const isAdmin = await getAdminSession();
+  const session = await getSession();
+  const isAdmin = session?.role === "admin";
   return NextResponse.json({ isAdmin });
 }

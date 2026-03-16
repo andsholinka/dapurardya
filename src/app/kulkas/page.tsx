@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ShoppingBasket, ArrowRight, Loader2, BrainCircuit, Lock, Crown, Trash2 } from "lucide-react";
+import { Sparkles, ShoppingBasket, ArrowRight, Loader2, ChefHat, Lock, Crown, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/RecipeCard";
@@ -39,6 +39,8 @@ export default function FridgePage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<SuggestedRecipe[]>([]);
   const [searched, setSearched] = useState(false);
+  const [fromAI, setFromAI] = useState(false);
+  const [fromCache, setFromCache] = useState(false);
   const [member, setMember] = useState<MemberInfo | null>(null);
   const [aiStatus, setAIStatus] = useState<AIUsageStatus | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -55,7 +57,7 @@ export default function FridgePage() {
       setMember(data.member ?? null);
       setAIStatus(data.aiStatus ?? null);
     } catch (error) {
-      console.error(error);
+      // silent — status tidak kritis
     } finally {
       setStatusLoading(false);
     }
@@ -112,11 +114,12 @@ export default function FridgePage() {
         return;
       }
       setResults(data.suggestions || []);
+      setFromAI(data.fromAI ?? false);
+      setFromCache(data.fromCache ?? false);
       if (data.aiStatus) setAIStatus(data.aiStatus);
       router.refresh();
     } catch (err) {
-      console.error(err);
-      setRequestError("Terjadi gangguan saat menghubungi Chef AI. Coba lagi sebentar.");
+      setRequestError("Chef AI sedang tidak bisa dihubungi. Rekomendasi ditampilkan berdasarkan kecocokan bahan.");
     } finally {
       setLoading(false);
     }
@@ -204,7 +207,7 @@ export default function FridgePage() {
               disabled={buttonDisabled}
               className="h-12 md:h-14 px-6 md:px-10 rounded-2xl font-bold shadow-lg w-full sm:w-auto"
             >
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <BrainCircuit className="mr-2 h-5 w-5" />}
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChefHat className="mr-2 h-5 w-5" />}
               {primaryButtonLabel}
             </Button>
           </div>
@@ -264,11 +267,27 @@ export default function FridgePage() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
+          {!loading && searched && !fromAI && results.length > 0 && (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+              <span>⚡</span>
+              <span>Chef AI sedang tidak tersedia. Rekomendasi ini berdasarkan kecocokan bahan — <strong>kredit tidak dipotong</strong>.</span>
+            </div>
+          )}
+
+          {!loading && searched && fromAI && fromCache && results.length > 0 && (
+            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 flex items-center gap-2">
+              <span>⚡</span>
+              <span>Rekomendasi dari cache Chef AI — <strong>kredit tidak dipotong</strong>.</span>
+            </div>
+          )}
+
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-4">
-              <div className="relative">
-                <div className="size-20 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-                <BrainCircuit className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 size-8 text-primary" />
+              <div className="relative flex items-center justify-center">
+                <div className="size-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+                <div className="absolute size-9 rounded-full bg-background flex items-center justify-center">
+                  <ChefHat className="size-5 text-primary" />
+                </div>
               </div>
               <p className="font-semibold text-lg animate-pulse text-center">Chef Ardya sedang meracik ide untukmu...</p>
             </div>

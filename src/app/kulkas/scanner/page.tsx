@@ -68,6 +68,15 @@ export default function FridgeScannerPage() {
 
   useEffect(() => {
     loadAIStatus();
+  }, []);
+
+  useEffect(() => {
+    if (cameraActive && stream && videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [cameraActive, stream]);
+
+  useEffect(() => {
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
@@ -89,17 +98,24 @@ export default function FridgeScannerPage() {
   }
 
   const startCamera = async () => {
+    setError("");
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: { 
+          facingMode: "environment", 
+          width: { ideal: 1920 }, 
+          height: { ideal: 1080 } 
+        }
       });
-      if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
-        setStream(mediaStream);
-        setCameraActive(true);
+      setStream(mediaStream);
+      setCameraActive(true);
+    } catch (err: any) {
+      console.error("Camera error:", err);
+      if (err.name === 'NotAllowedError') {
+        setError("Akses kamera ditolak. Mohon izinkan akses kamera di pengaturan browser Anda.");
+      } else {
+        setError("Tidak bisa mengakses kamera. Gunakan upload foto saja.");
       }
-    } catch (err) {
-      setError("Tidak bisa mengakses kamera. Gunakan upload foto saja.");
     }
   };
 
@@ -336,6 +352,7 @@ export default function FridgeScannerPage() {
                 ref={videoRef}
                 autoPlay
                 playsInline
+                muted
                 className="w-full rounded-2xl bg-black"
               />
               <div className="flex gap-3">

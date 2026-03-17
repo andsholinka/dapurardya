@@ -6,6 +6,10 @@ import { AdminRecipeCard } from "@/components/AdminRecipeCard";
 import { AdminAnalytics } from "@/components/AdminAnalyticsLazy";
 import { cn } from "@/lib/utils";
 
+// Force dynamic rendering - no caching
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getAllRecipes(): Promise<(Recipe & { _id?: string })[]> {
   try {
     const db = await getDb();

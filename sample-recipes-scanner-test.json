@@ -1,0 +1,145 @@
+[
+  {
+    "title": "Omelet Sosis Keju Jamur",
+    "slug": "omelet-sosis-keju-jamur",
+    "description": "Omelet lembut dengan isian sosis, keju, dan jamur yang gurih. Cocok untuk sarapan atau makan siang yang praktis dan mengenyangkan.",
+    "category": "Sarapan",
+    "prepTimeMinutes": 10,
+    "cookTimeMinutes": 15,
+    "servings": 2,
+    "ingredients": [
+      "4 butir telur",
+      "3 buah sosis (potong bulat)",
+      "50 gram keju cheddar parut",
+      "5 buah jamur kancing (iris tipis)",
+      "2 sdm susu cair",
+      "1 sdm mayones",
+      "Garam secukupnya",
+      "Merica secukupnya",
+      "1 sdm mentega untuk menumis"
+    ],
+    "steps": [
+      "Kocok telur dengan susu, garam, dan merica hingga rata",
+      "Panaskan mentega di wajan anti lengket",
+      "Tumis sosis dan jamur hingga harum, sisihkan",
+      "Tuang kocokan telur ke wajan, ratakan",
+      "Saat telur setengah matang, taburi keju parut, sosis, dan jamur di satu sisi",
+      "Lipat omelet menjadi setengah lingkaran",
+      "Masak hingga matang dan keju meleleh",
+      "Angkat dan sajikan dengan mayones di atasnya"
+    ],
+    "image": "",
+    "images": [],
+    "gallery": [],
+    "published": true,
+    "memberOnly": false,
+    "tags": ["telur", "sosis", "keju", "jamur", "sarapan", "praktis"],
+    "createdAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    }
+  },
+  {
+    "title": "Salad Segar Alpukat Apel",
+    "slug": "salad-segar-alpukat-apel",
+    "description": "Salad segar dengan kombinasi alpukat creamy, apel renyah, dan sayuran hijau. Dressing mayones yang lezat membuat salad ini sempurna untuk menu diet sehat.",
+    "category": "Salad",
+    "prepTimeMinutes": 15,
+    "cookTimeMinutes": 0,
+    "servings": 2,
+    "ingredients": [
+      "1 buah alpukat matang (potong dadu)",
+      "1 buah apel merah (potong dadu)",
+      "2 genggam selada segar (sobek-sobek)",
+      "5 buah jamur kancing (iris tipis)",
+      "1 buah jeruk manis (ambil dagingnya)",
+      "3 sdm mayones",
+      "1 sdm air jeruk lemon",
+      "1 sdt madu",
+      "Garam secukupnya",
+      "Merica secukupnya",
+      "Keju parut untuk topping (opsional)"
+    ],
+    "steps": [
+      "Cuci bersih semua sayuran dan buah",
+      "Potong alpukat dan apel menjadi dadu, siram dengan sedikit air jeruk agar tidak coklat",
+      "Sobek-sobek selada, iris jamur tipis",
+      "Ambil daging jeruk, buang bijinya",
+      "Buat dressing: campur mayones, air jeruk lemon, madu, garam, dan merica, aduk rata",
+      "Tata selada di piring sebagai dasar",
+      "Susun alpukat, apel, jamur, dan jeruk di atas selada",
+      "Siram dengan dressing mayones",
+      "Taburi keju parut jika suka",
+      "Sajikan segera selagi segar"
+    ],
+    "image": "",
+    "images": [],
+    "gallery": [],
+    "published": true,
+    "memberOnly": false,
+    "tags": ["salad", "alpukat", "apel", "sehat", "diet", "vegetarian"],
+    "createdAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    }
+  },
+  {
+    "title": "Rendang Daging Sapi Padang",
+    "slug": "rendang-daging-sapi-padang",
+    "description": "Rendang daging sapi khas Padang dengan bumbu rempah yang kaya. Dimasak hingga bumbu meresap dan daging empuk. Resep autentik yang membutuhkan kesabaran.",
+    "category": "Lauk Utama",
+    "prepTimeMinutes": 30,
+    "cookTimeMinutes": 180,
+    "servings": 6,
+    "ingredients": [
+      "1 kg daging sapi (potong kotak)",
+      "1 liter santan kental",
+      "500 ml santan encer",
+      "3 batang serai (memarkan)",
+      "5 lembar daun jeruk",
+      "3 lembar daun salam",
+      "2 cm lengkuas (memarkan)",
+      "2 cm jahe (memarkan)",
+      "1 batang kayu manis",
+      "3 butir cengkeh",
+      "10 siung bawang merah",
+      "8 siung bawang putih",
+      "10 buah cabai merah keriting",
+      "5 buah cabai rawit (sesuai selera)",
+      "3 cm kunyit",
+      "2 cm lengkuas",
+      "1 sdt ketumbar",
+      "1/2 sdt jintan",
+      "Garam secukupnya",
+      "Gula merah 2 sdm"
+    ],
+    "steps": [
+      "Haluskan semua bumbu halus dengan blender atau cobek",
+      "Tumis bumbu halus bersama serai, daun jeruk, daun salam, lengkuas, jahe, kayu manis, dan cengkeh hingga harum",
+      "Masukkan daging sapi, aduk hingga berubah warna",
+      "Tuang santan encer, masak dengan api sedang sambil terus diaduk",
+      "Setelah mendidih, kecilkan api, masak hingga santan menyusut",
+      "Tambahkan santan kental, garam, dan gula merah",
+      "Masak dengan api kecil sambil sesekali diaduk agar tidak gosong",
+      "Masak hingga bumbu meresap dan daging empuk (sekitar 3 jam)",
+      "Rendang siap saat bumbu mengering dan berminyak",
+      "Angkat dan sajikan dengan nasi putih hangat"
+    ],
+    "image": "",
+    "images": [],
+    "gallery": [],
+    "published": true,
+    "memberOnly": false,
+    "tags": ["rendang", "daging sapi", "padang", "lauk", "tradisional", "pedas"],
+    "createdAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    },
+    "updatedAt": {
+      "$date": "2026-03-17T10:00:00.000Z"
+    }
+  }
+]

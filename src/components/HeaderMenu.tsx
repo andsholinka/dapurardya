@@ -84,8 +84,39 @@ export function HeaderMenu({ member, isAdmin = false }: { member: AuthSession | 
     }
   }
 
-  // Credit Display — listens for "credits:update" custom event
-  const [displayCredits, setDisplayCredits] = useState<number>(member?.credits ?? 0);
+  // Credit Display — fetch fresh credits on mount
+  const [displayCredits, setDisplayCredits] = useState<number | null>(null);
+  const [creditsLoading, setCreditsLoading] = useState(true);
+
+  useEffect(() => {
+    // Fetch fresh credits on mount for members
+    if (member && !isAdmin) {
+      setCreditsLoading(true);
+      fetch("/api/member/ai-status", {
+        cache: "no-store",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+        },
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.member?.credits !== undefined) {
+            setDisplayCredits(data.member.credits);
+          }
+        })
+        .catch(() => {
+          // Fallback to cached value on error
+          setDisplayCredits(member?.credits ?? 0);
+        })
+        .finally(() => {
+          setCreditsLoading(false);
+        });
+    } else {
+      setDisplayCredits(member?.credits ?? 0);
+      setCreditsLoading(false);
+    }
+  }, [member, isAdmin]);
 
   useEffect(() => {
     function handler(e: Event) {
@@ -180,8 +211,14 @@ export function HeaderMenu({ member, isAdmin = false }: { member: AuthSession | 
             <Coins className="size-3 sm:size-3.5" />
           </div>
           <div className="flex items-baseline gap-1">
-            <span className="text-sm font-bold text-foreground leading-none">{displayCredits}</span>
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight hidden sm:inline">Credits</span>
+            {creditsLoading ? (
+              <Loader2 className="size-3 sm:size-3.5 animate-spin text-muted-foreground" />
+            ) : (
+              <>
+                <span className="text-sm font-bold text-foreground leading-none">{displayCredits ?? 0}</span>
+                <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-tight hidden sm:inline">Credits</span>
+              </>
+            )}
           </div>
         </div>
       )}

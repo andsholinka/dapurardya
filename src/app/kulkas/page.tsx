@@ -146,6 +146,14 @@ export default function FridgePage() {
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Masukkan bahan-bahan yang tersisa, dan biar Chef AI Dapur Ardya mencarikan resep terbaik untukmu.
         </p>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
+          <Link href="/kulkas/scanner">
+            <Button variant="outline" className="rounded-xl border-2 border-purple-200 hover:bg-purple-50 gap-2">
+              <Sparkles className="size-4" />
+              Coba AI Scanner (Foto Kulkas)
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="max-w-3xl mx-auto mb-8">

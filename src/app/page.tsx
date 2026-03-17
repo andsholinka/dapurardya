@@ -9,6 +9,10 @@ import type { Recipe, RecipeDoc } from "@/types/recipe";
 import { RecipeCard } from "@/components/RecipeCard";
 import { RequestModal } from "@/components/RequestModal";
 
+// Force dynamic rendering for fresh data
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 const COLLECTION = "recipes";
 
 export const metadata: Metadata = {

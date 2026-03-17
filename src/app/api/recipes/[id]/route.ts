@@ -109,6 +109,12 @@ export async function DELETE(
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Resep tidak ditemukan" }, { status: 404 });
     }
+    
+    // Revalidate all pages that show recipes
+    revalidatePath("/");
+    revalidatePath("/resep");
+    revalidatePath("/admin");
+    
     return NextResponse.json({ success: true });
   } catch (e) { return apiError("RECIPE_DELETE", e, "Gagal menghapus resep"); }
 }

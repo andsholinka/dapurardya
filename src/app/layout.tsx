@@ -7,6 +7,9 @@ import { RegisterSW } from "@/components/RegisterSW";
 import { InstallPWA } from "@/components/InstallPWA";
 import { NotificationManager } from "@/components/NotificationManager";
 
+// Force dynamic rendering for layout to prevent session caching
+export const dynamic = "force-dynamic";
+
 const quicksand = Quicksand({
   variable: "--font-sans",
   subsets: ["latin"],

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getDb } from "@/lib/mongodb";
 import { requireAdmin, getSession } from "@/lib/auth-v2";
 import { slugify } from "@/lib/slug";

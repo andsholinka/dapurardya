@@ -6,7 +6,7 @@ import type { MemberRecipeRequestStatus } from "@/lib/member-request";
 import type { RecipeRequest } from "@/types/recipe-request";
 import { RequestModal } from "@/components/RequestModal";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Coins, Wand2, Images } from "lucide-react";
+import { Coins } from "lucide-react";
 
 export default function MemberDashboard({
   session,
@@ -27,20 +27,6 @@ export default function MemberDashboard({
           >
             Tersimpan
           </Link>
-          <Link
-            href="/member/icon-studio"
-            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
-          >
-            <Wand2 className="size-3.5" />
-            Icon Studio
-          </Link>
-          <Link
-            href="/member/icon-studio/gallery"
-            className="flex h-9 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-border bg-card text-xs font-semibold shadow-sm transition-all hover:border-primary/50 sm:w-32"
-          >
-            <Images className="size-3.5" />
-            Galeri Icon
-          </Link>
           <RequestModal
             memberId={session.id}
             memberName={session.name}
@@ -54,22 +40,6 @@ export default function MemberDashboard({
             <Coins className="size-3.5" />
             + Top Up
           </Link>
-        </div>
-      </div>
-
-      <div className="mb-8 rounded-2xl border-2 border-primary/10 bg-card p-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-start gap-3">
-            <div className="rounded-xl bg-primary/10 p-2 text-primary">
-              <Sparkles className="size-5" />
-            </div>
-            <div>
-              <h2 className="font-bold">Chef AI & Request Resep</h2>
-              <p className="text-sm text-muted-foreground">
-                Setiap penggunaan fitur AI atau request resep akan mengurangi <span className="font-bold text-foreground">1 Credit</span>.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
 

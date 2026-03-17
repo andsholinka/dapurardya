@@ -244,9 +244,6 @@ export function HeaderMenu({ member, isAdmin = false }: { member: AuthSession | 
                 <Link href="/admin" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors" onClick={() => setOpen(false)}>
                   Dashboard Admin
                 </Link>
-                <Link href="/member/icon-studio" className="block px-4 py-2.5 text-sm hover:bg-muted transition-colors border-t" onClick={() => setOpen(false)}>
-                  Icon Studio
-                </Link>
               </>
             ) : (
               <>

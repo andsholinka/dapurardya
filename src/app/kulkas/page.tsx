@@ -156,24 +156,19 @@ export default function FridgePage() {
     <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
       {/* Header Section */}
       <div className="text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
-          <Sparkles className="size-3" />
-          Powered by Chef AI
-        </div>
+        <Link
+          href="/kulkas/scanner"
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-primary/15 to-accent/15 text-primary text-xs font-semibold border border-primary/20 hover:scale-105 transition-all shadow-sm animate-pulse"
+        >
+          <Sparkles className="size-3 shrink-0" />
+          Scan Kulkas Pakai AI
+        </Link>
         <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
           Isi Kulkasmu <span className="text-primary">Ada Apa?</span>
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Masukkan bahan-bahan yang tersisa, dan biar Chef AI Dapur Ardya mencarikan resep terbaik untukmu.
         </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
-          <Link href="/kulkas/scanner">
-            <Button className="rounded-full bg-gradient-to-r from-primary via-[#FFA9B9] to-accent hover:opacity-90 shadow-lg hover:shadow-xl transition-all gap-2 px-8 py-5 text-base font-bold text-white">
-              <Sparkles className="size-4 animate-pulse" />
-              Scan Kulkas Pakai AI
-            </Button>
-          </Link>
-        </div>
       </div>
 
       {/* Input Section */}
@@ -206,6 +201,9 @@ export default function FridgePage() {
             {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChefHat className="mr-2 h-5 w-5" />}
             {primaryButtonLabel}
           </Button>
+          <p className="text-xs text-muted-foreground text-center -mt-2">
+            🪙 Menggunakan <span className="font-semibold text-foreground">1 Credit</span> per tanya
+          </p>
 
           {/* Preview Bahan */}
           {ingredients.length > 0 && (

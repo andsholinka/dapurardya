@@ -24,7 +24,7 @@ export async function recordCreditUsage(
   db: Db,
   memberId: string,
   payload: {
-    action: "ai_suggest" | "recipe_request" | "admin_adjustment" | "icon_generate";
+    action: "ai_suggest" | "recipe_request" | "admin_adjustment";
     amount: number;
     description?: string;
     metadata?: any;

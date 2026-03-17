@@ -383,6 +383,9 @@ export default function FridgeScannerPage() {
                     <Sparkles className="mr-2 size-5" />
                     {!member ? "Masuk untuk Scan" : "Scan & Analisis Bahan"}
                   </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    🪙 Menggunakan <span className="font-semibold text-foreground">2 Credits</span> per scan
+                  </p>
                   
                   {!member && (
                     <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary flex items-center gap-2">
@@ -484,6 +487,9 @@ export default function FridgeScannerPage() {
                       <MessageSquare className="mr-2 size-4" />
                       Chat dengan Chef AI
                     </Button>
+                    <p className="text-xs text-muted-foreground text-center">
+                      🪙 <span className="font-semibold text-foreground">1 Credit</span> per sesi chat
+                    </p>
                   </div>
                 ))}
               </div>

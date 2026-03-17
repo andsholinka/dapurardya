@@ -41,7 +41,7 @@ export function RequestList({ requests }: { requests: RecipeRequest[] }) {
             <p className="font-medium truncate">
               {r.recipeName}
               {r.status === "done" && (
-                <span className="ml-2 text-xs text-green-600 font-normal">✓ selesai</span>
+                <span className="ml-2 text-xs text-primary font-normal">✓ selesai</span>
               )}
             </p>
             <p className="text-sm text-muted-foreground">dari: {r.name}</p>

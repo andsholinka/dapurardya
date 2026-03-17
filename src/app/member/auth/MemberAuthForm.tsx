@@ -27,6 +27,10 @@ export default function MemberAuthForm({ defaultTab }: { defaultTab: "login" | "
     setError("");
     setLoading(true);
     try {
+      // Check if there's a saved redirect path
+      const savedRedirect = localStorage.getItem('kulkas_redirect');
+      const redirectPath = savedRedirect || "/member";
+      
       if (tab === "login") {
         // Cek admin dulu
         const adminRes = await fetch("/api/auth/login", {
@@ -35,6 +39,7 @@ export default function MemberAuthForm({ defaultTab }: { defaultTab: "login" | "
           body: JSON.stringify({ email: form.email, password: form.password }),
         });
         if (adminRes.ok) {
+          localStorage.removeItem('kulkas_redirect'); // Clear redirect
           router.push("/admin");
           router.refresh();
           return;
@@ -47,7 +52,10 @@ export default function MemberAuthForm({ defaultTab }: { defaultTab: "login" | "
         });
         const data = await memberRes.json();
         if (!memberRes.ok) { setError(data.error || "Email atau password salah"); return; }
-        router.push("/member");
+        
+        // Clear redirect after successful login
+        localStorage.removeItem('kulkas_redirect');
+        router.push(redirectPath);
         router.refresh();
       } else {
         const res = await fetch("/api/member/register", {
@@ -57,7 +65,10 @@ export default function MemberAuthForm({ defaultTab }: { defaultTab: "login" | "
         });
         const data = await res.json();
         if (!res.ok) { setError(data.error || "Gagal mendaftar"); return; }
-        router.push("/member");
+        
+        // Clear redirect after successful register
+        localStorage.removeItem('kulkas_redirect');
+        router.push(redirectPath);
         router.refresh();
       }
     } catch {

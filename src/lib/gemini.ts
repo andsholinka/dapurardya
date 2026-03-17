@@ -58,14 +58,25 @@ export async function getRecipeSuggestions(
         genAI.models.generateContent({
           model: modelName,
           contents: prompt,
-          config: { responseMimeType: "application/json", temperature: 0.2 },
+          config: { temperature: 0.2 },
         }),
         TIMEOUT_MS
       );
 
-      const jsonText = (result.text || "").trim();
-      logger.info(`Gemini raw response: "${jsonText.slice(0, 200)}"`, "GEMINI");
-      if (!jsonText) return [];
+      let jsonText = (result.text || "").trim();
+      
+      // Log raw response untuk debugging
+      logger.info(`[GEMINI] Raw response (attempt ${attempt}): "${jsonText.slice(0, 300)}"`, "GEMINI");
+      
+      if (!jsonText) {
+        logger.warn(`[GEMINI] Empty response from Gemini API`, "GEMINI");
+        return [];
+      }
+
+      // Clean up response - remove markdown code blocks if present
+      jsonText = jsonText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      
+      logger.info(`[GEMINI] Cleaned JSON: "${jsonText.slice(0, 300)}"`, "GEMINI");
 
       const parsed = JSON.parse(jsonText);
       if (!Array.isArray(parsed)) return [];

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 export default function TopUpSuccessPage() {
   return (
     <div className="relative min-h-[80vh] flex items-center justify-center overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[400px] bg-[radial-gradient(circle_at_center,rgba(201,66,133,0.15),transparent_70%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 h-[400px] bg-[radial-gradient(circle_at_center,rgba(255,148,168,0.15),transparent_70%)]" />
       
       <div className="container relative mx-auto max-w-lg px-4 text-center">
         <div className="inline-flex size-20 items-center justify-center rounded-full bg-primary/10 text-primary mb-8 animate-in zoom-in duration-500">

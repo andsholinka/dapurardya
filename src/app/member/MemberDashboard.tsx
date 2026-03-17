@@ -89,8 +89,8 @@ export default function MemberDashboard({
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                     request.status === "done"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
+                      ? "bg-secondary text-foreground"
+                      : "bg-accent/40 text-foreground"
                   }`}
                 >
                   {request.status === "done" ? "Selesai" : "Menunggu"}

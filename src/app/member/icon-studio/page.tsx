@@ -276,7 +276,7 @@ export default function IconStudioPage() {
                 Baru
               </Button>
               <Button variant="outline" size="sm" className="flex-1 rounded-xl" onClick={handleCopy} disabled={downloading}>
-                {copied ? <Check className="size-3.5 mr-1.5 text-green-600" /> : <Copy className="size-3.5 mr-1.5" />}
+                {copied ? <Check className="size-3.5 mr-1.5 text-primary" /> : <Copy className="size-3.5 mr-1.5" />}
                 {copied ? "Tersalin!" : "Copy"}
               </Button>
               <Button size="sm" className="flex-1 rounded-xl" onClick={() => handleDownload(false)} disabled={downloading}>
@@ -290,7 +290,7 @@ export default function IconStudioPage() {
             </Button>
           </div>
           {result.fromCache ? (
-            <p className="text-center text-xs text-blue-600 mt-3">⚡ Dari cache — kredit tidak dipotong</p>
+            <p className="text-center text-xs text-primary mt-3">⚡ Dari cache — kredit tidak dipotong</p>
           ) : (
             <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center gap-1">
               {result.isAdmin ? (

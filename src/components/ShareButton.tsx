@@ -24,7 +24,7 @@ export function ShareButton({ title }: { title: string }) {
 
   return (
     <Button variant="outline" size="sm" className="rounded-xl gap-2" onClick={handleShare}>
-      {copied ? <Check className="size-4 text-green-600" /> : <Share2 className="size-4" />}
+      {copied ? <Check className="size-4 text-primary" /> : <Share2 className="size-4" />}
       {copied ? "Tersalin!" : "Bagikan"}
     </Button>
   );

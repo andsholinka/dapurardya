@@ -66,7 +66,7 @@ export default async function HomePage() {
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gradient-to-r from-primary/10 to-primary/20 text-primary text-sm font-bold border border-primary/20 hover:scale-105 transition-all shadow-sm mb-6 animate-pulse"
         >
           <Sparkles className="size-4" />
-          Baru: AI "Isi Kulkasmu" Suggester
+          Baru: AI Rekomendasi Resep dari Kulkasmu
         </Link>
         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
           Dapur Ardya

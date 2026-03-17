@@ -286,65 +286,27 @@ export default function FridgeScannerPage() {
     <div className="container max-w-6xl mx-auto px-4 py-8 md:py-12">
       {/* Header */}
       <div className="text-center space-y-4 mb-12">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 text-purple-600 text-xs font-bold uppercase tracking-wider">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
           <Camera className="size-3" />
           AI Vision Scanner
         </div>
         <h1 className="text-3xl md:text-5xl font-black text-foreground tracking-tight">
-          Scan <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Kulkasmu</span>
+          Scan <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-accent">Kulkasmu</span>
         </h1>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Foto isi kulkas atau bahan makanan, dan Chef AI akan mendeteksi bahan serta menyarankan resep lengkap dengan estimasi kalori.
         </p>
       </div>
 
-      {/* Member Status */}
-      {statusLoading ? (
-        <div className="max-w-3xl mx-auto mb-8 rounded-2xl border-2 border-border/60 bg-card px-5 py-4 text-sm text-muted-foreground">
-          Mengecek akses Scanner AI...
-        </div>
-      ) : !member ? (
-        <div className="max-w-3xl mx-auto mb-8 rounded-3xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-pink-50 px-5 py-5 shadow-sm">
-          <div className="flex items-start gap-3">
-            <div className="rounded-2xl bg-purple-100 p-3 text-purple-600">
-              <Camera className="size-5" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <h2 className="text-lg font-semibold">Scanner AI Khusus Member</h2>
-              <p className="text-sm text-muted-foreground">
-                Fitur ini memerlukan 2 Credit untuk setiap scan. Daftar sekarang dan dapatkan 3 Credit gratis!
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                <Link href="/member/auth?tab=login">
-                  <Button className="rounded-xl w-full sm:w-auto bg-gradient-to-r from-purple-600 to-pink-600">
-                    Masuk Member
-                  </Button>
-                </Link>
-                <Link href="/member/auth?tab=register">
-                  <Button variant="outline" className="rounded-xl w-full sm:w-auto">
-                    Daftar Member
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Scanner Guide */}
-      <div className="max-w-4xl mx-auto mb-8">
-        <ScannerGuide />
-      </div>
-
       {/* Scanner Section */}
-      <div className="max-w-3xl mx-auto mb-12">
+      <div className="max-w-3xl mx-auto mb-8">
         <div className="bg-card border-2 rounded-3xl p-6 md:p-8 shadow-xl">
           {!selectedImage && !cameraActive && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Button
                   onClick={startCamera}
-                  className="h-32 rounded-2xl flex flex-col gap-3 bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                  className="h-32 rounded-2xl flex flex-col gap-3 bg-gradient-to-br from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80"
                 >
                   <Camera className="size-8" />
                   <span className="font-bold">Buka Kamera</span>
@@ -412,19 +374,28 @@ export default function FridgeScannerPage() {
               </div>
               
               {!scanning && detectedIngredients.length === 0 && (
-                <Button
-                  onClick={handleScan}
-                  disabled={!member || (aiStatus && !aiStatus.canUseAI)}
-                  className="w-full h-14 rounded-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600"
-                >
-                  <Sparkles className="mr-2 size-5" />
-                  Scan & Analisis Bahan
-                </Button>
+                <>
+                  <Button
+                    onClick={handleScan}
+                    disabled={aiStatus && !aiStatus.canUseAI}
+                    className="w-full h-14 rounded-2xl font-bold bg-gradient-to-r from-primary to-accent"
+                  >
+                    <Sparkles className="mr-2 size-5" />
+                    {!member ? "Masuk untuk Scan" : "Scan & Analisis Bahan"}
+                  </Button>
+                  
+                  {!member && (
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary flex items-center gap-2">
+                      <AlertCircle className="size-4 shrink-0" />
+                      <span>Foto sudah siap! Masuk sebagai member untuk menggunakan Scanner AI.</span>
+                    </div>
+                  )}
+                </>
               )}
               
               {scanning && (
                 <div className="py-8 flex flex-col items-center gap-4">
-                  <Loader2 className="size-12 animate-spin text-purple-600" />
+                  <Loader2 className="size-12 animate-spin text-primary" />
                   <p className="font-semibold animate-pulse">Chef AI sedang menganalisis foto...</p>
                 </div>
               )}
@@ -441,23 +412,28 @@ export default function FridgeScannerPage() {
 
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* Scanner Guide */}
+      <div className="max-w-3xl mx-auto mb-12">
+        <ScannerGuide />
+      </div>
+
       {/* Results */}
       {detectedIngredients.length > 0 && (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {/* Detected Ingredients */}
           <div className="max-w-3xl mx-auto">
             <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Utensils className="size-6 text-purple-600" />
+              <Utensils className="size-6 text-primary" />
               Bahan Terdeteksi
             </h2>
             <div className="flex flex-wrap gap-3">
               {detectedIngredients.map((ing, i) => (
                 <div
                   key={i}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-100 to-pink-100 border-2 border-purple-200 font-semibold"
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-secondary to-accent/30 border-2 border-primary/20 font-semibold"
                 >
                   {ing.name}
-                  <span className="ml-2 text-xs text-purple-600">
+                  <span className="ml-2 text-xs text-primary">
                     {Math.round(ing.confidence * 100)}%
                   </span>
                 </div>
@@ -469,14 +445,14 @@ export default function FridgeScannerPage() {
           {suggestedRecipes.length > 0 ? (
             <div>
               <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-                <ChefHat className="size-6 text-purple-600" />
+                <ChefHat className="size-6 text-primary" />
                 Resep yang Disarankan
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {suggestedRecipes.map((recipe) => (
                   <div key={recipe._id} className="space-y-3">
                     <div className="relative">
-                      <div className="absolute -top-3 -right-3 z-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-xs font-bold px-3 py-1 rounded-lg shadow-lg">
+                      <div className="absolute -top-3 -right-3 z-10 bg-gradient-to-r from-primary to-accent text-white text-xs font-bold px-3 py-1 rounded-lg shadow-lg">
                         {recipe.matchScore}% Match
                       </div>
                       <RecipeCard recipe={recipe} />
@@ -496,14 +472,14 @@ export default function FridgeScannerPage() {
                       </div>
                     )}
                     
-                    <div className="p-3 rounded-xl bg-purple-50 border border-purple-100 text-xs italic text-muted-foreground">
+                    <div className="p-3 rounded-xl bg-secondary/50 border border-primary/10 text-xs italic text-muted-foreground">
                       &quot;{recipe.reason}&quot;
                     </div>
                     
                     <Button
                       onClick={() => startChatWithRecipe(recipe)}
                       variant="outline"
-                      className="w-full rounded-xl border-2 border-purple-200 hover:bg-purple-50"
+                      className="w-full rounded-xl border-2 border-primary/20 hover:bg-primary/5"
                     >
                       <MessageSquare className="mr-2 size-4" />
                       Chat dengan Chef AI
@@ -514,7 +490,7 @@ export default function FridgeScannerPage() {
             </div>
           ) : (
             <div className="max-w-2xl mx-auto">
-              <div className="rounded-3xl border-2 border-dashed border-purple-200 bg-purple-50/50 p-8 text-center space-y-4">
+              <div className="rounded-3xl border-2 border-dashed border-primary/20 bg-secondary/30 p-8 text-center space-y-4">
                 <div className="text-5xl">🍳</div>
                 <h3 className="text-xl font-bold text-foreground">Belum Ada Resep di Database</h3>
                 <p className="text-muted-foreground">
@@ -523,13 +499,13 @@ export default function FridgeScannerPage() {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
                   <Link href="/admin/resep/new">
-                    <Button className="rounded-xl bg-gradient-to-r from-purple-600 to-pink-600">
+                    <Button className="rounded-xl bg-gradient-to-r from-primary to-accent">
                       <ChefHat className="mr-2 size-4" />
                       Tambah Resep
                     </Button>
                   </Link>
                   <Link href="/resep">
-                    <Button variant="outline" className="rounded-xl border-2 border-purple-200">
+                    <Button variant="outline" className="rounded-xl border-2 border-primary/20">
                       Lihat Semua Resep
                     </Button>
                   </Link>
@@ -545,7 +521,7 @@ export default function FridgeScannerPage() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
           <div className="bg-background w-full sm:max-w-2xl h-[80vh] sm:h-[600px] rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col">
             {/* Chat Header */}
-            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-3xl">
+            <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-primary to-accent text-white rounded-t-3xl">
               <div className="flex items-center gap-3">
                 <ChefHat className="size-6" />
                 <div>
@@ -571,7 +547,7 @@ export default function FridgeScannerPage() {
                   <div
                     className={`max-w-[80%] px-4 py-3 rounded-2xl ${
                       msg.role === "user"
-                        ? "bg-gradient-to-r from-purple-600 to-pink-600 text-white"
+                        ? "bg-gradient-to-r from-primary to-accent text-white"
                         : "bg-muted text-foreground"
                     }`}
                   >
@@ -582,7 +558,7 @@ export default function FridgeScannerPage() {
               {chatLoading && (
                 <div className="flex justify-start">
                   <div className="bg-muted px-4 py-3 rounded-2xl">
-                    <Loader2 className="size-5 animate-spin text-purple-600" />
+                    <Loader2 className="size-5 animate-spin text-primary" />
                   </div>
                 </div>
               )}
@@ -597,12 +573,12 @@ export default function FridgeScannerPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && sendChatMessage()}
                   placeholder="Tanya Chef AI..."
-                  className="flex-1 px-4 py-3 rounded-2xl border-2 focus:outline-none focus:border-purple-600"
+                  className="flex-1 px-4 py-3 rounded-2xl border-2 focus:outline-none focus:border-primary"
                 />
                 <Button
                   onClick={sendChatMessage}
                   disabled={!chatInput.trim() || chatLoading}
-                  className="rounded-2xl px-6 bg-gradient-to-r from-purple-600 to-pink-600"
+                  className="rounded-2xl px-6 bg-gradient-to-r from-primary to-accent"
                 >
                   <Send className="size-5" />
                 </Button>

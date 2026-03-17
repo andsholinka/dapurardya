@@ -41,7 +41,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#e11d48",
+  themeColor: "#FF94A8",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -61,7 +61,7 @@ export default function RootLayout({
     <html lang="id">
       <body className={`${quicksand.variable} font-sans antialiased min-h-screen flex flex-col`}>
         <NextTopLoader 
-          color="#be185d" 
+          color="#FF94A8" 
           initialPosition={0.08}
           crawlSpeed={200}
           height={3}
@@ -69,7 +69,7 @@ export default function RootLayout({
           showSpinner={false}
           easing="ease"
           speed={200}
-          shadow="0 0 10px #be185d,0 0 5px #be185d"
+          shadow="0 0 10px #FF94A8,0 0 5px #FF94A8"
         />
         <LoadingProvider>
             <Header />

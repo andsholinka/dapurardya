@@ -113,7 +113,7 @@ export default function IconGalleryPage() {
                     className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-[10px] font-semibold hover:bg-muted transition-colors"
                     title="Copy gambar"
                   >
-                    {copied === icon.id ? <Check className="size-3 text-green-600" /> : <Copy className="size-3" />}
+                    {copied === icon.id ? <Check className="size-3 text-primary" /> : <Copy className="size-3" />}
                     {copied === icon.id ? "Tersalin!" : "Copy"}
                   </button>
                 </div>

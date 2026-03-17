@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ShoppingBasket, ArrowRight, Loader2, ChefHat, Lock, Crown, Trash2 } from "lucide-react";
+import { Sparkles, ShoppingBasket, Loader2, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { RecipeCard } from "@/components/RecipeCard";
 import Link from "next/link";
 
@@ -48,6 +47,17 @@ export default function FridgePage() {
 
   useEffect(() => {
     loadAIStatus();
+    
+    // Restore ingredients from localStorage after login
+    const savedIngredients = localStorage.getItem('kulkas_ingredients');
+    if (savedIngredients) {
+      try {
+        setIngredientInput(savedIngredients);
+        localStorage.removeItem('kulkas_ingredients'); // Clear after restore
+      } catch (error) {
+        // Silent fail
+      }
+    }
   }, []);
 
   async function loadAIStatus() {
@@ -63,29 +73,39 @@ export default function FridgePage() {
     }
   }
 
-  const addIngredient = () => {
-    const val = ingredientInput.trim();
-    if (val && !ingredients.includes(val)) {
-      setIngredients([...ingredients, val]);
-      setIngredientInput("");
-    }
-  };
-
-  const removeIngredient = (idx: number) => {
-    setIngredients(ingredients.filter((_, i) => i !== idx));
+  // Parse ingredients from textarea input
+  const parseIngredients = (text: string): string[] => {
+    // Split by newline or comma, trim, filter empty
+    return text
+      .split(/[\n,]+/)
+      .map(item => item.trim())
+      .filter(item => item.length > 0);
   };
 
   const clearIngredients = () => {
-    setIngredients([]);
     setIngredientInput("");
+    setIngredients([]);
     setResults([]);
     setSearched(false);
     setRequestError("");
   };
 
   const handleSuggest = async () => {
-    if (ingredients.length === 0) return;
+    // Parse ingredients from input
+    const parsedIngredients = parseIngredients(ingredientInput);
+    
+    if (parsedIngredients.length === 0) {
+      setRequestError("Masukkan minimal 1 bahan untuk mendapatkan rekomendasi.");
+      return;
+    }
+    
+    setIngredients(parsedIngredients);
+    
     if (!member) {
+      // Save ingredients to localStorage before redirecting to login
+      localStorage.setItem('kulkas_ingredients', ingredientInput);
+      localStorage.setItem('kulkas_redirect', '/kulkas');
+      
       setRequestError("Bahanmu sudah siap. Masuk sebagai member untuk melihat rekomendasi Chef AI.");
       router.push("/member/auth?tab=login");
       return;
@@ -103,7 +123,7 @@ export default function FridgePage() {
       const res = await fetch("/api/ai/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ingredients }),
+        body: JSON.stringify({ ingredients: parsedIngredients }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -125,7 +145,7 @@ export default function FridgePage() {
     }
   };
 
-  const buttonDisabled = loading || ingredients.length === 0 || statusLoading;
+  const buttonDisabled = loading || ingredientInput.trim().length === 0 || statusLoading;
   const primaryButtonLabel = !member
     ? "Masuk untuk Gunakan AI"
     : aiStatus && !aiStatus.canUseAI
@@ -148,42 +168,12 @@ export default function FridgePage() {
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4">
           <Link href="/kulkas/scanner">
-            <Button variant="outline" className="rounded-xl border-2 border-purple-200 hover:bg-purple-50 gap-2">
-              <Sparkles className="size-4" />
-              Coba AI Scanner (Foto Kulkas)
+            <Button className="rounded-full bg-gradient-to-r from-primary via-[#FFA9B9] to-accent hover:opacity-90 shadow-lg hover:shadow-xl transition-all gap-2 px-8 py-5 text-base font-bold text-white">
+              <Sparkles className="size-4 animate-pulse" />
+              Scan Kulkas Pakai AI
             </Button>
           </Link>
         </div>
-      </div>
-
-      <div className="max-w-3xl mx-auto mb-8">
-        {statusLoading ? (
-          <div className="rounded-2xl border-2 border-border/60 bg-card px-5 py-4 text-sm text-muted-foreground">
-            Mengecek akses Chef AI...
-          </div>
-        ) : !member ? (
-          <div className="rounded-3xl border-2 border-primary/20 bg-card px-5 py-5 shadow-sm">
-            <div className="flex items-start gap-3">
-              <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                <Lock className="size-5" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <h2 className="text-lg font-semibold">Chef AI Khusus Member</h2>
-                <p className="text-sm text-muted-foreground">
-                  Fitur ini memerlukan 1 Credit untuk setiap penggunaan. Member baru akan mendapatkan 3 Credit saat bergabung.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                  <Link href="/member/auth?tab=login">
-                    <Button className="rounded-xl w-full sm:w-auto">Masuk Member</Button>
-                  </Link>
-                  <Link href="/member/auth?tab=register">
-                    <Button variant="outline" className="rounded-xl w-full sm:w-auto">Daftar Member</Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : null}
       </div>
 
       {/* Input Section */}
@@ -193,64 +183,59 @@ export default function FridgePage() {
         </div>
         
         <div className="relative z-10 space-y-6">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Input
-                value={ingredientInput}
-                onChange={(e) => setIngredientInput(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addIngredient()}
-                placeholder="Masukkan bahan (misal: Telur)"
-                className="h-12 md:h-14 rounded-2xl border-2 pl-4 pr-12 text-base md:text-lg shadow-sm w-full"
-              />
-              <button 
-                onClick={addIngredient}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl hover:bg-muted transition-colors"
-                title="Tambah Bahan"
-              >
-                <ArrowRight className="size-5 text-primary" />
-              </button>
-            </div>
-            <Button 
-              onClick={handleSuggest} 
-              disabled={buttonDisabled}
-              className="h-12 md:h-14 px-6 md:px-10 rounded-2xl font-bold shadow-lg w-full sm:w-auto"
-            >
-              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChefHat className="mr-2 h-5 w-5" />}
-              {primaryButtonLabel}
-            </Button>
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-foreground">
+              Bahan-bahan yang Tersedia
+            </label>
+            <textarea
+              value={ingredientInput}
+              onChange={(e) => setIngredientInput(e.target.value)}
+              placeholder="Contoh: Telur, Susu, Keju, Sosis..."
+              className="w-full h-32 rounded-2xl border-2 px-4 py-3 text-base resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+            <p className="text-xs text-muted-foreground">
+              💡 Tips: Pisahkan setiap bahan dengan enter atau koma. Contoh: Telur, Susu, Keju
+            </p>
           </div>
 
-          {/* Tags Container */}
-          <div className="min-h-[40px]">
-            {ingredients.length === 0 ? (
-              <p className="text-sm text-muted-foreground italic">Belum ada bahan yang ditambahkan...</p>
-            ) : (
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="flex flex-1 flex-wrap gap-2">
-                  {ingredients.map((ing, i) => (
-                    <span
-                      key={i}
-                      className="inline-flex items-center gap-1.5 rounded-xl border-2 bg-muted px-4 py-2 text-sm font-semibold animate-in fade-in zoom-in duration-300"
-                    >
-                      {ing}
-                      <button onClick={() => removeIngredient(i)} className="hover:text-destructive">
-                        <span className="text-lg leading-none">&times;</span>
-                      </button>
-                    </span>
-                  ))}
-                </div>
+          <Button 
+            onClick={handleSuggest} 
+            disabled={buttonDisabled}
+            className="h-12 md:h-14 px-6 md:px-10 rounded-2xl font-bold shadow-lg w-full"
+          >
+            {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <ChefHat className="mr-2 h-5 w-5" />}
+            {primaryButtonLabel}
+          </Button>
+
+          {/* Preview Bahan */}
+          {ingredients.length > 0 && (
+            <div className="rounded-xl border-2 border-primary/20 bg-primary/5 p-4 space-y-2">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-foreground">
+                  Bahan yang akan dianalisis ({ingredients.length}):
+                </p>
                 <button
                   type="button"
                   onClick={clearIngredients}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors"
                 >
-                  <Trash2 className="size-3.5" />
-                  Clear bahan
+                  Clear semua
                 </button>
               </div>
-            )}
-          </div>
-          {!member && ingredients.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {ingredients.map((ing, i) => (
+                  <span
+                    key={i}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-background border px-3 py-1 text-sm font-medium"
+                  >
+                    {ing}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!member && ingredientInput.trim().length > 0 && (
             <p className="text-xs text-muted-foreground">
               Bahanmu sudah tersimpan di sini. Masuk sebagai member untuk membuka rekomendasi Chef AI.
             </p>
@@ -270,20 +255,20 @@ export default function FridgePage() {
           <div className="flex items-center gap-3">
             <div className="h-px flex-1 bg-border" />
             <h2 className="text-xl font-bold flex items-center gap-2">
-              Rekomendasi Chef <Sparkles className="size-5 text-yellow-500" />
+              Rekomendasi Chef <Sparkles className="size-5 text-accent" />
             </h2>
             <div className="h-px flex-1 bg-border" />
           </div>
 
           {!loading && searched && !fromAI && results.length > 0 && (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700 flex items-center gap-2">
+            <div className="rounded-xl border border-accent/40 bg-accent/20 px-4 py-3 text-sm text-foreground flex items-center gap-2">
               <span>⚡</span>
               <span>Chef AI sedang tidak tersedia. Rekomendasi ini berdasarkan kecocokan bahan — <strong>kredit tidak dipotong</strong>.</span>
             </div>
           )}
 
           {!loading && searched && fromAI && fromCache && results.length > 0 && (
-            <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 flex items-center gap-2">
+            <div className="rounded-xl border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-foreground flex items-center gap-2">
               <span>⚡</span>
               <span>Rekomendasi dari cache Chef AI — <strong>kredit tidak dipotong</strong>.</span>
             </div>

@@ -53,7 +53,7 @@ export default async function MemberUpgradePage() {
 
   return (
     <div className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top,rgba(201,66,133,0.18),transparent_60%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(circle_at_top,rgba(255,148,168,0.18),transparent_60%)]" />
 
       <div className="container relative mx-auto max-w-6xl px-4 py-8 sm:py-12">
 

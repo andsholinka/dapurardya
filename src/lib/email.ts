@@ -54,17 +54,17 @@ export async function sendRequestNotification(data: RequestNotificationData) {
       <!DOCTYPE html>
       <html lang="id">
       <head><meta charset="UTF-8" /></head>
-      <body style="margin:0;padding:0;background:#fdf2f8;font-family:'Segoe UI',sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf2f8;padding:32px 16px;">
+      <body style="margin:0;padding:0;background:#FFF2F1;font-family:'Segoe UI',sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF2F1;padding:32px 16px;">
           <tr>
             <td align="center">
-              <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #fce7f3;">
+              <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #FFD6D6;">
                 
                 <!-- Header -->
                 <tr>
-                  <td style="background:#be185d;padding:24px 32px;">
+                  <td style="background:#FF94A8;padding:24px 32px;">
                     <p style="margin:0;color:#fff;font-size:22px;font-weight:700;">🍳 Dapur Ardya</p>
-                    <p style="margin:4px 0 0;color:#fce7f3;font-size:14px;">Ada request resep baru masuk!</p>
+                    <p style="margin:4px 0 0;color:#FFE0DE;font-size:14px;">Ada request resep baru masuk!</p>
                   </td>
                 </tr>
 
@@ -73,8 +73,8 @@ export async function sendRequestNotification(data: RequestNotificationData) {
                   <td style="padding:32px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="background:#fdf2f8;border-radius:12px;padding:20px;border-left:4px solid #be185d;">
-                          <p style="margin:0 0 4px;font-size:12px;color:#9d174d;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Nama Resep yang Diminta</p>
+                        <td style="background:#FFE0DE;border-radius:12px;padding:20px;border-left:4px solid #FF94A8;">
+                          <p style="margin:0 0 4px;font-size:12px;color:#5a3a3a;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Nama Resep yang Diminta</p>
                           <p style="margin:0;font-size:20px;font-weight:700;color:#1f2937;">${recipeName}</p>
                         </td>
                       </tr>
@@ -107,7 +107,7 @@ export async function sendRequestNotification(data: RequestNotificationData) {
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
                       <tr>
                         <td align="center">
-                          <a href="${BASE_URL}/admin/requests" style="display:inline-block;background:#be185d;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:600;">
+                          <a href="${BASE_URL}/admin/requests" style="display:inline-block;background:#FF94A8;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:600;">
                             Lihat di Dashboard Admin →
                           </a>
                         </td>
@@ -118,9 +118,9 @@ export async function sendRequestNotification(data: RequestNotificationData) {
 
                 <!-- Footer -->
                 <tr>
-                  <td style="padding:16px 32px;border-top:1px solid #fce7f3;background:#fdf2f8;">
+                  <td style="padding:16px 32px;border-top:1px solid #FFD6D6;background:#FFF2F1;">
                     <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">
-                      Email ini dikirim otomatis oleh sistem Dapur Ardya · <a href="${BASE_URL}" style="color:#be185d;text-decoration:none;">dapurardya.my.id</a>
+                      Email ini dikirim otomatis oleh sistem Dapur Ardya · <a href="${BASE_URL}" style="color:#FF94A8;text-decoration:none;">dapurardya.my.id</a>
                     </p>
                   </td>
                 </tr>
@@ -164,17 +164,17 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
       <!DOCTYPE html>
       <html lang="id">
       <head><meta charset="UTF-8" /></head>
-      <body style="margin:0;padding:0;background:#fdf2f8;font-family:'Segoe UI',sans-serif;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background:#fdf2f8;padding:32px 16px;">
+      <body style="margin:0;padding:0;background:#FFF2F1;font-family:'Segoe UI',sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF2F1;padding:32px 16px;">
           <tr>
             <td align="center">
-              <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #fce7f3;">
+              <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #FFD6D6;">
 
                 <!-- Header -->
                 <tr>
-                  <td style="background:#be185d;padding:24px 32px;">
+                  <td style="background:#FF94A8;padding:24px 32px;">
                     <p style="margin:0;color:#fff;font-size:22px;font-weight:700;">🍳 Dapur Ardya</p>
-                    <p style="margin:4px 0 0;color:#fce7f3;font-size:14px;">Request resepmu sudah selesai!</p>
+                    <p style="margin:4px 0 0;color:#FFE0DE;font-size:14px;">Request resepmu sudah selesai!</p>
                   </td>
                 </tr>
 
@@ -185,8 +185,8 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
 
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="background:#fdf2f8;border-radius:12px;padding:20px;border-left:4px solid #be185d;">
-                          <p style="margin:0 0 4px;font-size:12px;color:#9d174d;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Resep yang kamu minta</p>
+                        <td style="background:#FFE0DE;border-radius:12px;padding:20px;border-left:4px solid #FF94A8;">
+                          <p style="margin:0 0 4px;font-size:12px;color:#5a3a3a;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Resep yang kamu minta</p>
                           <p style="margin:0;font-size:20px;font-weight:700;color:#1f2937;">${recipeName}</p>
                         </td>
                       </tr>
@@ -210,7 +210,7 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
                     <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
                       <tr>
                         <td align="center">
-                          <a href="${BASE_URL}/resep" style="display:inline-block;background:#be185d;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:600;">
+                          <a href="${BASE_URL}/resep" style="display:inline-block;background:#FF94A8;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:10px;font-size:15px;font-weight:600;">
                             Lihat Resep Sekarang →
                           </a>
                         </td>
@@ -221,9 +221,9 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
 
                 <!-- Footer -->
                 <tr>
-                  <td style="padding:16px 32px;border-top:1px solid #fce7f3;background:#fdf2f8;">
+                  <td style="padding:16px 32px;border-top:1px solid #FFD6D6;background:#FFF2F1;">
                     <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">
-                      Email ini dikirim otomatis oleh sistem Dapur Ardya · <a href="${BASE_URL}" style="color:#be185d;text-decoration:none;">dapurardya.my.id</a>
+                      Email ini dikirim otomatis oleh sistem Dapur Ardya · <a href="${BASE_URL}" style="color:#FF94A8;text-decoration:none;">dapurardya.my.id</a>
                     </p>
                   </td>
                 </tr>
@@ -242,3 +242,4 @@ export async function sendRequestDoneNotification(data: RequestDoneNotificationD
     logger.error("Gagal kirim email notifikasi request done", "EMAIL", err);
   }
 }
+

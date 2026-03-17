@@ -48,42 +48,53 @@
   --animate-spin-slow: spin 3s linear infinite;
 }
 
-/* Dapur Ardya – girly, warm, mobile-first theme */
+/* Dapur Ardya – soft, girly, mobile-first theme */
 :root {
-  --background: oklch(0.99 0.01 350);
-  --foreground: oklch(0.25 0.03 350);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.03 350);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.03 350);
-  --primary: oklch(0.55 0.18 350);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.96 0.02 350);
-  --secondary-foreground: oklch(0.35 0.06 350);
-  --muted: oklch(0.96 0.02 350);
-  --muted-foreground: oklch(0.5 0.04 350);
-  --accent: oklch(0.94 0.04 350);
-  --accent-foreground: oklch(0.4 0.08 350);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.02 350);
-  --input: oklch(0.92 0.02 350);
-  --ring: oklch(0.55 0.18 350);
-  --chart-1: oklch(0.65 0.2 350);
-  --chart-2: oklch(0.7 0.15 20);
-  --chart-3: oklch(0.6 0.18 330);
-  --chart-4: oklch(0.75 0.12 350);
-  --chart-5: oklch(0.8 0.08 350);
+  /* Brand Colors - Dapur Ardya Palette */
+  --brand-coral-pink: #FFA9B9;
+  --brand-light-pink: #FFE0DE;
+  --brand-off-white: #FFF2F1;
+  --brand-hot-pink: #FF94A8;
+  --brand-turquoise: #83E1E0;
+  
+  /* Semantic Colors */
+  --background: #FFF2F1;
+  --foreground: #5a3a3a;
+  --card: #FFFFFF;
+  --card-foreground: #5a3a3a;
+  --popover: #FFFFFF;
+  --popover-foreground: #5a3a3a;
+  --primary: #FF94A8;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFE0DE;
+  --secondary-foreground: #5a3a3a;
+  --muted: #FFF2F1;
+  --muted-foreground: #a07070;
+  --accent: #83E1E0;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E57373;
+  --border: #FFD6D6;
+  --input: #FFD6D6;
+  --ring: #FF94A8;
+  
+  /* Chart Colors */
+  --chart-1: #FF94A8;
+  --chart-2: #FFA9B9;
+  --chart-3: #83E1E0;
+  --chart-4: #FFE0DE;
+  --chart-5: #FFF2F1;
+  
+  /* Sidebar */
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #5a3a3a;
+  --sidebar-primary: #FF94A8;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFE0DE;
+  --sidebar-accent-foreground: #5a3a3a;
+  --sidebar-border: #FFD6D6;
+  --sidebar-ring: #FF94A8;
+  
   --radius: 0.75rem;
-  --sidebar: oklch(0.99 0.01 350);
-  --sidebar-foreground: oklch(0.25 0.03 350);
-  --sidebar-primary: oklch(0.55 0.18 350);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.96 0.02 350);
-  --sidebar-accent-foreground: oklch(0.35 0.06 350);
-  --sidebar-border: oklch(0.92 0.02 350);
-  --sidebar-ring: oklch(0.55 0.18 350);
-  --girly-pink: oklch(0.55 0.18 350);
-  --girly-rose: oklch(0.94 0.04 350);
 }
 
 .dark {
@@ -136,4 +147,25 @@
   margin-inline: auto;
   padding-inline: 1rem;
   max-width: 56rem;
+}
+
+/* Brand Color Utilities */
+@layer utilities {
+  .bg-brand-coral { background-color: #FFA9B9; }
+  .bg-brand-light-pink { background-color: #FFE0DE; }
+  .bg-brand-off-white { background-color: #FFF2F1; }
+  .bg-brand-hot-pink { background-color: #FF94A8; }
+  .bg-brand-turquoise { background-color: #83E1E0; }
+  
+  .text-brand-coral { color: #FFA9B9; }
+  .text-brand-light-pink { color: #FFE0DE; }
+  .text-brand-off-white { color: #FFF2F1; }
+  .text-brand-hot-pink { color: #FF94A8; }
+  .text-brand-turquoise { color: #83E1E0; }
+  
+  .border-brand-coral { border-color: #FFA9B9; }
+  .border-brand-light-pink { border-color: #FFE0DE; }
+  .border-brand-off-white { border-color: #FFF2F1; }
+  .border-brand-hot-pink { border-color: #FF94A8; }
+  .border-brand-turquoise { border-color: #83E1E0; }
 }

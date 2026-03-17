@@ -6,7 +6,7 @@ import { getMemberAIUsageStatus } from "@/lib/member-ai";
 import { getFallbackRecipeSuggestions } from "@/lib/recipe-suggestion-fallback";
 import { deductMemberCredits, recordCreditUsage } from "@/lib/member-credits";
 import type { RecipeDoc } from "@/types/recipe";
-import { apiError } from "@/lib/logger";
+import { apiError, logger } from "@/lib/logger";
 
 // Cache saran AI — key: hash bahan+resep, value: { suggestions, expiresAt }
 const aiCache = new Map<string, { suggestions: unknown[]; expiresAt: number }>();
@@ -90,13 +90,22 @@ export async function POST(request: NextRequest) {
     if (cached) {
       result = cached;
       fromCache = true;
+      usedRealAI = true; // ✅ Cache berasal dari AI sebelumnya, jadi tetap dianggap dari AI
+      logger.info(`[AI_SUGGEST] Using cached AI suggestions (${cached.length} results)`, "AI_SUGGEST");
       // Cache berasal dari AI sebelumnya — kredit sudah dipotong saat itu, jangan potong lagi
     } else {
+      logger.info(`[AI_SUGGEST] Calling Gemini AI with ${ingredients.length} ingredients`, "AI_SUGGEST");
       const aiSuggestions = await getRecipeSuggestions(ingredients, recipes);
       usedRealAI = aiSuggestions.length > 0;
+      
+      logger.info(`[AI_SUGGEST] Gemini returned ${aiSuggestions.length} suggestions, usedRealAI: ${usedRealAI}`, "AI_SUGGEST");
 
       const suggestions =
         aiSuggestions.length > 0 ? aiSuggestions : getFallbackRecipeSuggestions(ingredients, recipes);
+      
+      if (aiSuggestions.length === 0) {
+        logger.warn(`[AI_SUGGEST] Gemini failed, using fallback suggestions`, "AI_SUGGEST");
+      }
 
       // Kalau fallback juga kosong, tampilkan 3 resep terbaru sebagai default
       const finalSuggestions = suggestions.length > 0

@@ -162,8 +162,8 @@ export function RatingStars({ recipeId, isMember, compact = false, initialAvg = 
 
       {/* Feedback sukses di bawah bintang */}
       {success && (
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-green-600 animate-in fade-in slide-in-from-left-2 duration-300">
-          <div className="size-1.5 rounded-full bg-green-500 animate-pulse" />
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-primary animate-in fade-in slide-in-from-left-2 duration-300">
+          <div className="size-1.5 rounded-full bg-primary animate-pulse" />
           Rating berhasil disimpan!
         </div>
       )}
